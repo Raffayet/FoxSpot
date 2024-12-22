@@ -1,1 +1,1 @@
-# FoxSpot
+# FoxSpot - mobile app
