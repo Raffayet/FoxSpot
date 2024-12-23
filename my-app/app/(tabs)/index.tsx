@@ -19,10 +19,12 @@ import axios from "axios";
 import {EventService} from "@/service/event.service";
 import {Event} from '@/model/event'
 import Constants from "expo-constants/src/Constants";
+import MapComponent from "@/components/custom_components/MapComponent";
+import {useFonts} from "expo-font";
+
 
 export default function App() {
     const [events, setEvents] = useState<any>([])
-    const [loading, setLoading] = useState(true);
     const [markers, setMarkers] = useState<any[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -45,8 +47,6 @@ export default function App() {
                 console.log("Fetched Events:", eventsData);
             } catch (error) {
                 console.error("Error fetching events:", error);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -54,7 +54,7 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        console.log("Updated Events State:", events); // Logs whenever `events` changes
+        console.log("Updated Events State:", events);
     }, [events]);
 
     const handleImagePick = async () => {
@@ -131,16 +131,6 @@ export default function App() {
         }
     };
 
-    const handleMarkerPress = (marker: any) => {
-        setSelectedMarker(marker);
-        setPopupVisible(true);
-        Animated.timing(popupAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-    };
-
     const handleClosePopup = () => {
         Animated.timing(popupAnim, {
             toValue: 300,
@@ -149,47 +139,9 @@ export default function App() {
         }).start(() => setPopupVisible(false));
     };
 
-    if (loading) {
-        return <Text>Loading...</Text>;
-    }
-
-    if (!events || events.length === 0) {
-        return <Text>No events available.</Text>;
-    }
-
     return (
         <View style={styles.container}>
-            <MapView
-                style={styles.map}
-                initialRegion={{
-                    latitude: 45.2671,
-                    longitude: 19.8335,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                }}
-            >
-                {/*{markers.map((marker, index) => (*/}
-                {/*    <Marker*/}
-                {/*        key={index}*/}
-                {/*        coordinate={{*/}
-                {/*            latitude: marker.latitude,*/}
-                {/*            longitude: marker.longitude,*/}
-                {/*        }}*/}
-                {/*        onPress={() => handleMarkerPress(marker)}*/}
-                {/*    />*/}
-                {/*))}*/}
-                {events.length > 0 &&
-                    events?.map((event: Event) => (
-                    <Marker
-                        key={event.id}
-                        coordinate={{
-                            latitude: event.location.lat,
-                            longitude: event.location.long,
-                        }}
-                        title={event.name}
-                    />
-                ))}
-            </MapView>
+            <MapComponent events={events}/>
 
             <TouchableOpacity
                 style={styles.addButton}
@@ -313,7 +265,6 @@ export default function App() {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    map: { flex: 1 },
     addButton: {
         position: "absolute",
         bottom: 20,
