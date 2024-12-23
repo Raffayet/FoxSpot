@@ -16,9 +16,13 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import {EventSerivce} from "@/service/event.serivce";
+import {EventService} from "@/service/event.service";
+import {Event} from '@/model/event'
+import Constants from "expo-constants/src/Constants";
 
 export default function App() {
+    const [events, setEvents] = useState<any>([])
+    const [loading, setLoading] = useState(true);
     const [markers, setMarkers] = useState<any[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -36,15 +40,22 @@ export default function App() {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await EventSerivce.getAllEvents();
-                console.log(response);
+                const eventsData = await EventService.getAllEvents();
+                setEvents(eventsData);
+                console.log("Fetched Events:", eventsData);
             } catch (error) {
                 console.error("Error fetching events:", error);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchEvents();
     }, []);
+
+    useEffect(() => {
+        console.log("Updated Events State:", events); // Logs whenever `events` changes
+    }, [events]);
 
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -138,6 +149,14 @@ export default function App() {
         }).start(() => setPopupVisible(false));
     };
 
+    if (loading) {
+        return <Text>Loading...</Text>;
+    }
+
+    if (!events || events.length === 0) {
+        return <Text>No events available.</Text>;
+    }
+
     return (
         <View style={styles.container}>
             <MapView
@@ -149,14 +168,25 @@ export default function App() {
                     longitudeDelta: 0.01,
                 }}
             >
-                {markers.map((marker, index) => (
+                {/*{markers.map((marker, index) => (*/}
+                {/*    <Marker*/}
+                {/*        key={index}*/}
+                {/*        coordinate={{*/}
+                {/*            latitude: marker.latitude,*/}
+                {/*            longitude: marker.longitude,*/}
+                {/*        }}*/}
+                {/*        onPress={() => handleMarkerPress(marker)}*/}
+                {/*    />*/}
+                {/*))}*/}
+                {events.length > 0 &&
+                    events?.map((event: Event) => (
                     <Marker
-                        key={index}
+                        key={event.id}
                         coordinate={{
-                            latitude: marker.latitude,
-                            longitude: marker.longitude,
+                            latitude: event.location.lat,
+                            longitude: event.location.long,
                         }}
-                        onPress={() => handleMarkerPress(marker)}
+                        title={event.name}
                     />
                 ))}
             </MapView>

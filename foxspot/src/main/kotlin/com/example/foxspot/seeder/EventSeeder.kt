@@ -22,11 +22,11 @@ class EventSeeder(private val eventRepository: EventRepository) {
 
     private fun createInitialNotes() {
         val notes = listOf(
-            Event("Coffee with Sarah", Point(19.8376, 45.2565)),
-            Event("Meeting with John", Point(19.8343, 45.2671)),
-            Event("Morning Run", Point(19.8495, 45.2524)),
-            Event("Visit to the Gallery", Point(19.8433, 45.2552)),
-            Event("Dinner with Alex", Point(19.8590, 45.2530))
+            Event("Coffee with Sarah", Point(45.2565, 19.8376)),
+            Event("Meeting with John", Point(45.2671, 19.8343)),
+            Event("Morning Run", Point(45.2524, 19.8495)),
+            Event("Visit to the Gallery", Point(45.2552, 19.8433)),
+            Event("Dinner with Alex", Point(45.2530, 19.8590))
         )
         eventRepository.saveAll(notes)
     }
