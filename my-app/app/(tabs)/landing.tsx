@@ -8,6 +8,7 @@ import {
     Animated,
     Image,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function LandingPage({ navigation }: any) {
     const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity: 0
@@ -32,7 +33,7 @@ export default function LandingPage({ navigation }: any) {
         <View style={styles.container}>
             <ImageBackground
                 source={{
-                    uri: "https://i.pinimg.com/736x/2a/9a/db/2a9adbd1c4c73cc40ce7dbfb5e0cd3cc.jpg",
+                    uri: "https://i.pinimg.com/736x/64/49/d4/6449d4f445e8cf392a79543fb9b85158.jpg",
                 }}
                 style={styles.backgroundImage}
             >
@@ -45,7 +46,7 @@ export default function LandingPage({ navigation }: any) {
                     <View style={styles.textContainer}>
                         <Text style={styles.title}>Welcome to FoxSpot</Text>
                         <Text style={styles.subtitle}>
-                            Let’s Get You Closer to <Text style={styles.highlight}>the Party!</Text>
+                            Let’s Get You Closer to <Text style={styles.highlight}>the Party</Text>
                         </Text>
                     </View>
                     <View style={styles.buttonContainer}>
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     subtitle: {
-        fontSize: 20,
+        fontSize: 19,
         fontFamily: "Aryzena-Regular",
         color: "#e0e0e0",
         textAlign: "center",
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     },
     highlight: {
         fontFamily: "Poppins-Bold",
-        color: "#1e90ff",
+        color: "#d5b43e",
         fontWeight: "bold",
     },
     buttonContainer: {
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#1e90ff",
+        backgroundColor: "#d5b43e",
         paddingVertical: 15,
         paddingHorizontal: 20,
         borderRadius: 50,
