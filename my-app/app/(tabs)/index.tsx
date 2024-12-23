@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
+    Animated,
     Image,
     ImageBackground,
     Modal,
@@ -8,6 +9,9 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
@@ -18,6 +22,7 @@ export default function App() {
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMarker, setSelectedMarker] = useState<any>(null);
+    const popupAnim = useRef(new Animated.Value(300)).current; // Slide from bottom
     const [newMarker, setNewMarker] = useState({
         title: "",
         description: "",
@@ -104,6 +109,19 @@ export default function App() {
     const handleMarkerPress = (marker: any) => {
         setSelectedMarker(marker);
         setPopupVisible(true);
+        Animated.timing(popupAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handleClosePopup = () => {
+        Animated.timing(popupAnim, {
+            toValue: 300,
+            duration: 300,
+            useNativeDriver: true,
+        }).start(() => setPopupVisible(false));
     };
 
     return (
@@ -137,7 +155,9 @@ export default function App() {
             </TouchableOpacity>
 
             {popupVisible && selectedMarker && (
-                <View style={styles.popup}>
+                <Animated.View
+                    style={[styles.popup, { transform: [{ translateY: popupAnim }] }]}
+                >
                     <ImageBackground
                         source={{ uri: selectedMarker.image }}
                         style={styles.popupImage}
@@ -160,13 +180,13 @@ export default function App() {
                             </View>
                             <TouchableOpacity
                                 style={styles.closeButton}
-                                onPress={() => setPopupVisible(false)}
+                                onPress={handleClosePopup}
                             >
                                 <Text style={styles.closeButtonText}>CLOSE</Text>
                             </TouchableOpacity>
                         </View>
                     </ImageBackground>
-                </View>
+                </Animated.View>
             )}
 
             <Modal
@@ -175,67 +195,73 @@ export default function App() {
                 transparent={true}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={styles.fullscreenModalContainer}>
-                    <View style={styles.fullscreenModalContent}>
-                        <Text style={styles.modalTitle}>Add Event</Text>
-                        <TextInput
-                            placeholder="Address/Title"
-                            value={newMarker.title}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, title: text })}
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="City"
-                            value={newMarker.city}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, city: text })}
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="Type of Event"
-                            value={newMarker.eventType}
-                            onChangeText={(text) =>
-                                setNewMarker({ ...newMarker, eventType: text })
-                            }
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="Description"
-                            value={newMarker.description}
-                            onChangeText={(text) =>
-                                setNewMarker({ ...newMarker, description: text })
-                            }
-                            style={styles.input}
-                        />
-                        <TouchableOpacity
-                            style={styles.imageButton}
-                            onPress={handleImagePick}
-                        >
-                            <Text style={styles.imageButtonText}>
-                                {newMarker.image ? "Change Image" : "Select Image"}
-                            </Text>
-                        </TouchableOpacity>
-                        {newMarker.image && (
-                            <Image
-                                source={{ uri: newMarker.image }}
-                                style={styles.previewImage}
+                <KeyboardAvoidingView
+                    style={styles.fullscreenModalContainer}
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                >
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.fullscreenModalContent}>
+                            <Text style={styles.modalTitle}>Add Event</Text>
+                            <TextInput
+                                placeholder="Address/Title"
+                                value={newMarker.title}
+                                onChangeText={(text) => setNewMarker({ ...newMarker, title: text })}
+                                style={styles.input}
                             />
-                        )}
-                        <View style={styles.fullscreenModalButtonRow}>
+                            <TextInput
+                                placeholder="City"
+                                value={newMarker.city}
+                                onChangeText={(text) => setNewMarker({ ...newMarker, city: text })}
+                                style={styles.input}
+                            />
+                            <TextInput
+                                placeholder="Type of Event"
+                                value={newMarker.eventType}
+                                onChangeText={(text) =>
+                                    setNewMarker({ ...newMarker, eventType: text })
+                                }
+                                style={styles.input}
+                            />
+                            <TextInput
+                                placeholder="Description"
+                                value={newMarker.description}
+                                onChangeText={(text) =>
+                                    setNewMarker({ ...newMarker, description: text })
+                                }
+                                style={styles.input}
+                                multiline
+                            />
                             <TouchableOpacity
-                                style={[styles.modalButton, styles.cancelButton]}
-                                onPress={() => setModalVisible(false)}
+                                style={styles.imageButton}
+                                onPress={handleImagePick}
                             >
-                                <Text style={styles.modalButtonText}>CANCEL</Text>
+                                <Text style={styles.imageButtonText}>
+                                    {newMarker.image ? "Change Image" : "Select Image"}
+                                </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.modalButton, styles.addButtonInModal]}
-                                onPress={handleAddMarker}
-                            >
-                                <Text style={styles.modalButtonText}>ADD MARKER</Text>
-                            </TouchableOpacity>
+                            {newMarker.image && (
+                                <Image
+                                    source={{ uri: newMarker.image }}
+                                    style={styles.previewImage}
+                                />
+                            )}
+                            <View style={styles.fullscreenModalButtonRow}>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.cancelButton]}
+                                    onPress={() => setModalVisible(false)}
+                                >
+                                    <Text style={styles.modalButtonText}>CANCEL</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.addButtonInModal]}
+                                    onPress={handleAddMarker}
+                                >
+                                    <Text style={styles.modalButtonText}>ADD MARKER</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </Modal>
         </View>
     );
@@ -255,18 +281,24 @@ const styles = StyleSheet.create({
     },
     addButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
     fullscreenModalContainer: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" },
+    scrollContent: { flexGrow: 1 },
     fullscreenModalContent: {
-        flex: 1,
+        flex: 0,
         backgroundColor: "white",
         borderRadius: 10,
         margin: 20,
         padding: 20,
         justifyContent: "center",
     },
-    modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 20 },
+    modalTitle: {
+        fontSize: 22,
+        fontWeight: "bold",
+        marginBottom: 15,
+        textAlign: "center",
+    },
     input: {
         width: "100%",
-        height: 40,
+        height: 45,
         borderWidth: 1,
         borderColor: "#ccc",
         borderRadius: 5,
@@ -275,9 +307,10 @@ const styles = StyleSheet.create({
     },
     imageButton: {
         backgroundColor: "#007BFF",
-        paddingVertical: 10,
+        paddingVertical: 12,
         borderRadius: 5,
         marginBottom: 20,
+        alignItems: "center",
     },
     imageButtonText: { color: "white", fontSize: 16 },
     previewImage: {
@@ -292,8 +325,8 @@ const styles = StyleSheet.create({
     },
     modalButton: {
         flex: 1,
-        paddingVertical: 15,
-        marginHorizontal: 10,
+        paddingVertical: 12,
+        marginHorizontal: 5,
         borderRadius: 5,
         alignItems: "center",
     },
