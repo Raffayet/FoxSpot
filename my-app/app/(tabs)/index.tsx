@@ -40,17 +40,14 @@ export default function App() {
     });
 
     useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const eventsData = await EventService.getAllEvents();
+        EventService.getAllEvents()
+            .then((eventsData) => {
                 setEvents(eventsData);
                 console.log("Fetched Events:", eventsData);
-            } catch (error) {
+            })
+            .catch((error) => {
                 console.error("Error fetching events:", error);
-            }
-        };
-
-        fetchEvents();
+            });
     }, []);
 
     useEffect(() => {

@@ -1,13 +1,22 @@
 import {Event} from "@/model/event";
 import MapView, {Marker} from "react-native-maps";
 import React from "react";
-import {StyleSheet} from "react-native";
+import {ActivityIndicator, StyleSheet, View} from "react-native";
 
 export interface Props {
     events: Event[]
 }
 
 export default function MapComponent(props: Props) {
+    // In case the events are not yet loaded
+    if (props.events.length === 0) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#007BFF" />
+            </View>
+        );
+    }
+
     return(
         <MapView
             style={styles.map}
@@ -45,4 +54,10 @@ export default function MapComponent(props: Props) {
 
 const styles = StyleSheet.create({
     map: { flex: 1 },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#F5FCFF",
+    },
 })
