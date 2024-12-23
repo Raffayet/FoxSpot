@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, {useState, useRef, useEffect} from "react";
 import {
     Animated,
     Image,
@@ -16,6 +16,7 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import {EventSerivce} from "@/service/event.serivce";
 
 export default function App() {
     const [markers, setMarkers] = useState<any[]>([]);
@@ -31,6 +32,19 @@ export default function App() {
         image: "",
         tags: [],
     });
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await EventSerivce.getAllEvents();
+                console.log(response);
+            } catch (error) {
+                console.error("Error fetching events:", error);
+            }
+        };
+
+        fetchEvents();
+    }, []);
 
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
