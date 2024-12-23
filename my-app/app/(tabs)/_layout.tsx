@@ -31,7 +31,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Map',
-            tabBarIcon: ({ color }) => <FontAwesome name="map" size={28} color={color} />
+            tabBarIcon: ({ color }) => <FontAwesome name="map-marker" size={28} color={color} />
         }}
       />
       <Tabs.Screen
