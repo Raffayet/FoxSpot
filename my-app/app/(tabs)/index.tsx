@@ -1,116 +1,238 @@
 import React, { useState } from "react";
+import {
+    Image,
+    ImageBackground,
+    Modal,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { StyleSheet, View, Text, TextInput, Button, Modal, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import axios from "axios";
 
 export default function App() {
-    const [markers, setMarkers] = useState([
-        {
-            id: "1",
-            latitude: 45.250445,
-            longitude: 19.830203,
-            title: "Adija Endrea 33",
-            description: "Novi Sad, Serbia",
-        },
-        {
-            id: "2",
-            latitude: 45.260100,
-            longitude: 19.844500,
-            title: "Bulevar Oslobođenja 34",
-            description: "Novi Sad, Serbia",
-        },
-    ]);
+    const [markers, setMarkers] = useState<any[]>([]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [popupVisible, setPopupVisible] = useState(false);
+    const [selectedMarker, setSelectedMarker] = useState<any>(null);
+    const [newMarker, setNewMarker] = useState({
+        title: "",
+        description: "",
+        city: "",
+        eventType: "",
+        image: "",
+        tags: [],
+    });
 
-    const [isModalVisible, setModalVisible] = useState(false);
-    const [address, setAddress] = useState("");
-    const [city, setCity] = useState("");
-    const [eventType, setEventType] = useState("");
-
-    const handleAddEvent = () => {
-        setModalVisible(true);
-    };
-
-    const handleAddMarker = () => {
-        // Simulate adding a marker with approximate latitude and longitude
-        if (!address || !city || !eventType) {
-            Alert.alert("Error", "Please fill out all fields.");
+    const handleImagePick = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+            alert("Permission to access the media library is required!");
             return;
         }
 
-        const newMarker = {
-            id: Date.now().toString(),
-            latitude: markers[0].latitude + Math.random() * 0.01 - 0.005, // Randomize near existing markers
-            longitude: markers[0].longitude + Math.random() * 0.01 - 0.005,
-            title: `${address} (${eventType})`,
-            description: city,
-        };
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
 
-        setMarkers([...markers, newMarker]);
-        setModalVisible(false);
-        setAddress("");
-        setCity("");
-        setEventType("");
+        if (!result.canceled && result.assets.length > 0) {
+            setNewMarker({
+                ...newMarker,
+                image: result.assets[0].uri,
+            });
+        } else {
+            alert("No image selected.");
+        }
+    };
+
+    const handleAddMarker = async () => {
+        if (
+            !newMarker.title ||
+            !newMarker.description ||
+            !newMarker.city ||
+            !newMarker.eventType ||
+            !newMarker.image
+        ) {
+            alert("Please fill in all fields and select an image.");
+            return;
+        }
+
+        try {
+            const fullAddress = `${newMarker.title}, ${newMarker.city}`;
+            const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+                params: {
+                    q: fullAddress,
+                    format: "json",
+                },
+                headers: {
+                    "User-Agent": "YourAppName/1.0 (your-email@example.com)",
+                },
+            });
+
+            if (response.data.length > 0) {
+                const { lat, lon } = response.data[0];
+                const markerWithCoordinates = {
+                    ...newMarker,
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    tags: newMarker.eventType === "Party" ? ["Music", "Dance"] : ["General"],
+                };
+
+                setMarkers([...markers, markerWithCoordinates]);
+                setModalVisible(false);
+                setNewMarker({
+                    title: "",
+                    description: "",
+                    city: "",
+                    eventType: "",
+                    image: "",
+                    tags: [],
+                });
+            } else {
+                alert("Address not found. Please try again with more details.");
+            }
+        } catch (error) {
+            alert("Failed to geocode the address. Please check your internet connection.");
+        }
+    };
+
+    const handleMarkerPress = (marker: any) => {
+        setSelectedMarker(marker);
+        setPopupVisible(true);
     };
 
     return (
         <View style={styles.container}>
             <MapView
-                style={StyleSheet.absoluteFill}
+                style={styles.map}
                 initialRegion={{
-                    latitude: 45.250445,
-                    longitude: 19.830203,
+                    latitude: 45.2671,
+                    longitude: 19.8335,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                 }}
             >
-                {markers.map((marker) => (
+                {markers.map((marker, index) => (
                     <Marker
-                        key={marker.id}
+                        key={index}
                         coordinate={{
                             latitude: marker.latitude,
                             longitude: marker.longitude,
                         }}
-                        title={marker.title}
-                        description={marker.description}
+                        onPress={() => handleMarkerPress(marker)}
                     />
                 ))}
             </MapView>
 
-            {/* Add Event Button */}
-            <View style={styles.buttonContainer}>
-                <Button title="Add Event" onPress={handleAddEvent} />
-            </View>
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => setModalVisible(true)}
+            >
+                <Text style={styles.addButtonText}>ADD EVENT</Text>
+            </TouchableOpacity>
 
-            {/* Modal for Adding Marker */}
+            {popupVisible && selectedMarker && (
+                <View style={styles.popup}>
+                    <ImageBackground
+                        source={{ uri: selectedMarker.image }}
+                        style={styles.popupImage}
+                    >
+                        <View style={styles.overlay}>
+                            <Text style={styles.popupTitle}>{selectedMarker.title}</Text>
+                            <Text style={styles.popupDescription}>
+                                {selectedMarker.description}
+                            </Text>
+                            <Text style={styles.popupDetails}>
+                                Event: {selectedMarker.eventType}
+                            </Text>
+                            <Text style={styles.popupDetails}>City: {selectedMarker.city}</Text>
+                            <View style={styles.tagsContainer}>
+                                {selectedMarker.tags.map((tag: string, index: number) => (
+                                    <View key={index} style={styles.tag}>
+                                        <Text style={styles.tagText}>{tag}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setPopupVisible(false)}
+                            >
+                                <Text style={styles.closeButtonText}>CLOSE</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ImageBackground>
+                </View>
+            )}
+
             <Modal
-                visible={isModalVisible}
+                visible={modalVisible}
                 animationType="slide"
                 transparent={true}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
+                <View style={styles.fullscreenModalContainer}>
+                    <View style={styles.fullscreenModalContent}>
                         <Text style={styles.modalTitle}>Add Event</Text>
                         <TextInput
+                            placeholder="Address/Title"
+                            value={newMarker.title}
+                            onChangeText={(text) => setNewMarker({ ...newMarker, title: text })}
                             style={styles.input}
-                            placeholder="Address"
-                            value={address}
-                            onChangeText={setAddress}
                         />
                         <TextInput
-                            style={styles.input}
                             placeholder="City"
-                            value={city}
-                            onChangeText={setCity}
+                            value={newMarker.city}
+                            onChangeText={(text) => setNewMarker({ ...newMarker, city: text })}
+                            style={styles.input}
                         />
                         <TextInput
-                            style={styles.input}
                             placeholder="Type of Event"
-                            value={eventType}
-                            onChangeText={setEventType}
+                            value={newMarker.eventType}
+                            onChangeText={(text) =>
+                                setNewMarker({ ...newMarker, eventType: text })
+                            }
+                            style={styles.input}
                         />
-                        <View style={styles.modalButtons}>
-                            <Button title="Add Marker" onPress={handleAddMarker} />
-                            <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                        <TextInput
+                            placeholder="Description"
+                            value={newMarker.description}
+                            onChangeText={(text) =>
+                                setNewMarker({ ...newMarker, description: text })
+                            }
+                            style={styles.input}
+                        />
+                        <TouchableOpacity
+                            style={styles.imageButton}
+                            onPress={handleImagePick}
+                        >
+                            <Text style={styles.imageButtonText}>
+                                {newMarker.image ? "Change Image" : "Select Image"}
+                            </Text>
+                        </TouchableOpacity>
+                        {newMarker.image && (
+                            <Image
+                                source={{ uri: newMarker.image }}
+                                style={styles.previewImage}
+                            />
+                        )}
+                        <View style={styles.fullscreenModalButtonRow}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton]}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.modalButtonText}>CANCEL</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.addButtonInModal]}
+                                onPress={handleAddMarker}
+                            >
+                                <Text style={styles.modalButtonText}>ADD MARKER</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -120,49 +242,97 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    buttonContainer: {
+    container: { flex: 1 },
+    map: { flex: 1 },
+    addButton: {
         position: "absolute",
         bottom: 20,
-        alignSelf: "center",
-        backgroundColor: "white",
-        padding: 10,
-        borderRadius: 8,
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    modalContent: {
-        width: "80%",
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 20,
-        shadowColor: "#000",
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        right: 20,
+        backgroundColor: "#007BFF",
+        padding: 15,
+        borderRadius: 50,
         elevation: 5,
     },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginBottom: 15,
-        textAlign: "center",
+    addButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+    fullscreenModalContainer: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" },
+    fullscreenModalContent: {
+        flex: 1,
+        backgroundColor: "white",
+        borderRadius: 10,
+        margin: 20,
+        padding: 20,
+        justifyContent: "center",
     },
+    modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 20 },
     input: {
+        width: "100%",
+        height: 40,
         borderWidth: 1,
         borderColor: "#ccc",
         borderRadius: 5,
         padding: 10,
         marginBottom: 15,
     },
-    modalButtons: {
+    imageButton: {
+        backgroundColor: "#007BFF",
+        paddingVertical: 10,
+        borderRadius: 5,
+        marginBottom: 20,
+    },
+    imageButtonText: { color: "white", fontSize: 16 },
+    previewImage: {
+        width: "100%",
+        height: 150,
+        borderRadius: 5,
+        marginBottom: 20,
+    },
+    fullscreenModalButtonRow: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginTop: 10,
     },
+    modalButton: {
+        flex: 1,
+        paddingVertical: 15,
+        marginHorizontal: 10,
+        borderRadius: 5,
+        alignItems: "center",
+    },
+    cancelButton: { backgroundColor: "#FF6347" },
+    addButtonInModal: { backgroundColor: "#32CD32" },
+    modalButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+    popup: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "white",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: "hidden",
+    },
+    popupImage: {
+        height: 200,
+        justifyContent: "flex-end",
+    },
+    overlay: { padding: 20, backgroundColor: "rgba(0,0,0,0.5)" },
+    popupTitle: { fontSize: 18, fontWeight: "bold", color: "white" },
+    popupDescription: { fontSize: 14, color: "white", marginBottom: 5 },
+    popupDetails: { fontSize: 12, color: "white" },
+    tagsContainer: { flexDirection: "row", marginTop: 10 },
+    tag: {
+        backgroundColor: "#007BFF",
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        marginRight: 5,
+    },
+    tagText: { color: "white", fontSize: 12 },
+    closeButton: {
+        backgroundColor: "#FF6347",
+        borderRadius: 10,
+        paddingVertical: 10,
+        marginTop: 15,
+        alignItems: "center",
+    },
+    closeButtonText: { color: "white", fontWeight: "bold" },
 });
