@@ -144,6 +144,20 @@ export default function App() {
         );
     };
 
+    const handleDeleteEvent = async () => {
+        if (!selectedMarker) return;
+
+        try {
+            await EventService.deleteEvent(selectedMarker.id); // Assuming `id` is the unique identifier
+            setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedMarker.id));
+            alert("Event deleted successfully!");
+            setPopupVisible(false);
+        } catch (error) {
+            console.error("Error deleting event:", error);
+            alert("Failed to delete event. Please try again.");
+        }
+    };
+
     const getEventDetails = (eventType: string) => {
         switch (eventType.toLowerCase()) {
             case "party":
@@ -210,9 +224,14 @@ export default function App() {
                                 </View>
                             ))}
                     </View>
-                    <TouchableOpacity style={styles.closeButton} onPress={handleClosePopup}>
-                        <Text style={styles.closeButtonText}>CLOSE</Text>
-                    </TouchableOpacity>
+                    <View style={styles.popupButtons}>
+                        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteEvent}>
+                            <Text style={styles.deleteButtonText}>DELETE</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.closeButton} onPress={handleClosePopup}>
+                            <Text style={styles.closeButtonText}>CLOSE</Text>
+                        </TouchableOpacity>
+                    </View>
                 </Animated.View>
             )}
 
@@ -406,16 +425,32 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     tagText: { color: "white", fontSize: 12 },
-    closeButton: {
+    popupButtons: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        marginTop: 10,
+    },
+    deleteButton: {
         backgroundColor: "#FF6347",
         borderRadius: 15,
         paddingVertical: 10,
         paddingHorizontal: 20,
-        alignSelf: "center",
-        marginTop: 20,
     },
-    closeButtonText: { color: "white", fontWeight: "bold" },
-
+    deleteButtonText: {
+        color: "white",
+        fontWeight: "bold",
+    },
+    closeButton: {
+        backgroundColor: "#007BFF",
+        borderRadius: 15,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+    closeButtonText: {
+        color: "white",
+        fontWeight: "bold",
+    },
     tagContainer: {
         flexDirection: "row",
         justifyContent: "center",

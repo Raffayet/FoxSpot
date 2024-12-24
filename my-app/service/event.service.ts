@@ -13,4 +13,8 @@ export class EventService {
         const response = await api.post<AppEvent>(`${EventService.URI}/create`, event);
         return response.data;
     }
+
+    static async deleteEvent(eventId: string): Promise<void> {
+        await api.delete(`${EventService.URI}/delete/${eventId}`);
+    }
 }
