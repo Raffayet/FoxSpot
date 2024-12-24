@@ -1,4 +1,4 @@
 export interface Point {
-    lat: number
-    long: number
+    lat: number;
+    long: number;
 }

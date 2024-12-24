@@ -1,15 +1,15 @@
-import {Event} from "@/model/event";
-import MapView, {Marker} from "react-native-maps";
+import { AppEvent } from "@/model/event";
+import MapView, { Marker } from "react-native-maps";
 import React from "react";
-import {ActivityIndicator, StyleSheet, View} from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export interface Props {
-    events: Event[]
+    events: AppEvent[];
+    onMarkerPress: (event: AppEvent) => void;
 }
 
-export default function MapComponent(props: Props) {
-    // In case the events are not yet loaded
-    if (props.events.length === 0) {
+export default function MapComponent({ events, onMarkerPress }: Props) {
+    if (events.length === 0) {
         return (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#007BFF" />
@@ -17,7 +17,7 @@ export default function MapComponent(props: Props) {
         );
     }
 
-    return(
+    return (
         <MapView
             style={styles.map}
             initialRegion={{
@@ -27,29 +27,19 @@ export default function MapComponent(props: Props) {
                 longitudeDelta: 0.01,
             }}
         >
-            {/*{markers.map((marker, index) => (*/}
-            {/*    <Marker*/}
-            {/*        key={index}*/}
-            {/*        coordinate={{*/}
-            {/*            latitude: marker.latitude,*/}
-            {/*            longitude: marker.longitude,*/}
-            {/*        }}*/}
-            {/*        onPress={() => handleMarkerPress(marker)}*/}
-            {/*    />*/}
-            {/*))}*/}
-            {props.events.length > 0 &&
-                props.events?.map((event: Event) => (
-                    <Marker
-                        key={event.id}
-                        coordinate={{
-                            latitude: event.location.lat,
-                            longitude: event.location.long,
-                        }}
-                        title={event.name}
-                    />
-                ))}
+            {events.map((event) => (
+                <Marker
+                    key={event.id}
+                    coordinate={{
+                        latitude: event.location.lat,
+                        longitude: event.location.long,
+                    }}
+                    title={event.name}
+                    onPress={() => onMarkerPress(event)}
+                />
+            ))}
         </MapView>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -60,4 +50,4 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#F5FCFF",
     },
-})
+});

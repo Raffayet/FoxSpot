@@ -12,4 +12,8 @@ class EventService(
     fun getAllEvents(): List<Event> {
         return eventRepository.findAll()
     }
+
+    fun saveEvent(event: Event): Event {
+        return eventRepository.save(event)
+    }
 }

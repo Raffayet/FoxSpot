@@ -77,6 +77,57 @@ export default function App() {
         }
     };
 
+    // const handleAddMarker = async () => {
+    //     if (
+    //         !newMarker.title ||
+    //         !newMarker.description ||
+    //         !newMarker.city ||
+    //         !newMarker.eventType ||
+    //         !newMarker.image
+    //     ) {
+    //         alert("Please fill in all fields and select an image.");
+    //         return;
+    //     }
+    //
+    //     try {
+    //         const fullAddress = `${newMarker.title}, ${newMarker.city}`;
+    //         const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+    //             params: {
+    //                 q: fullAddress,
+    //                 format: "json",
+    //             },
+    //             headers: {
+    //                 "User-Agent": "YourAppName/1.0 (your-email@example.com)",
+    //             },
+    //         });
+    //
+    //         if (response.data.length > 0) {
+    //             const { lat, lon } = response.data[0];
+    //             const markerWithCoordinates = {
+    //                 ...newMarker,
+    //                 latitude: parseFloat(lat),
+    //                 longitude: parseFloat(lon),
+    //                 tags: newMarker.eventType === "Party" ? ["Music", "Dance"] : ["General"],
+    //             };
+    //
+    //             setMarkers([...markers, markerWithCoordinates]);
+    //             setModalVisible(false);
+    //             setNewMarker({
+    //                 title: "",
+    //                 description: "",
+    //                 city: "",
+    //                 eventType: "",
+    //                 image: "",
+    //                 tags: [],
+    //             });
+    //         } else {
+    //             alert("Address not found. Please try again with more details.");
+    //         }
+    //     } catch (error) {
+    //         alert("Failed to geocode the address. Please check your internet connection.");
+    //     }
+    // };
+
     const handleAddMarker = async () => {
         if (
             !newMarker.title ||
@@ -103,14 +154,49 @@ export default function App() {
 
             if (response.data.length > 0) {
                 const { lat, lon } = response.data[0];
+
+                // Assign tags based on the event type
+                let tags = [];
+                switch (newMarker.eventType.toLowerCase()) {
+                    case "party":
+                        tags = ["Music", "Dance", "Fun"];
+                        break;
+                    case "culture":
+                        tags = ["Art", "History", "Exhibition"];
+                        break;
+                    case "meeting":
+                        tags = ["Business", "Networking", "Discussion"];
+                        break;
+                    case "work":
+                        tags = ["Productivity", "Teamwork", "Focus"];
+                        break;
+                    case "dinner":
+                        tags = ["Food", "Friends", "Relax"];
+                        break;
+                    case "exercise":
+                        tags = ["Fitness", "Health", "Energy"];
+                        break;
+                    default:
+                        tags = ["General"];
+                }
+
                 const markerWithCoordinates = {
-                    ...newMarker,
-                    latitude: parseFloat(lat),
-                    longitude: parseFloat(lon),
-                    tags: newMarker.eventType === "Party" ? ["Music", "Dance"] : ["General"],
+                    name: newMarker.title, // Name
+                    address: newMarker.title, // Address
+                    city: newMarker.city, // City
+                    eventType: newMarker.eventType, // Type of Event
+                    description: newMarker.description, // Description
+                    image: newMarker.image, // Image URL
+                    tags, // Tags dynamically assigned
+                    location: { lat: parseFloat(lat), long: parseFloat(lon) }, // Latitude and Longitude
                 };
 
-                setMarkers([...markers, markerWithCoordinates]);
+                // Save the event using EventService
+                const savedEvent = await EventService.createEvent(markerWithCoordinates);
+
+                // Update the events state directly to include the new event
+                setEvents((prevEvents) => [...prevEvents, savedEvent]);
+
                 setModalVisible(false);
                 setNewMarker({
                     title: "",
@@ -124,8 +210,22 @@ export default function App() {
                 alert("Address not found. Please try again with more details.");
             }
         } catch (error) {
-            alert("Failed to geocode the address. Please check your internet connection.");
+            console.error("Failed to save the event:", error);
+            alert("Failed to save the event. Please check your internet connection.");
         }
+    };
+
+
+
+
+    const handleMarkerPress = (event: Event) => {
+        setSelectedMarker(event);
+        setPopupVisible(true);
+        Animated.timing(popupAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
     };
 
     const handleClosePopup = () => {
@@ -138,7 +238,7 @@ export default function App() {
 
     return (
         <View style={styles.container}>
-            <MapComponent events={events}/>
+            <MapComponent events={events} onMarkerPress={handleMarkerPress} />
 
             <TouchableOpacity
                 style={styles.addButton}
@@ -156,7 +256,7 @@ export default function App() {
                         style={styles.popupImage}
                     >
                         <View style={styles.overlay}>
-                            <Text style={styles.popupTitle}>{selectedMarker.title}</Text>
+                            <Text style={styles.popupTitle}>{selectedMarker.name}</Text>
                             <Text style={styles.popupDescription}>
                                 {selectedMarker.description}
                             </Text>
@@ -164,13 +264,6 @@ export default function App() {
                                 Event: {selectedMarker.eventType}
                             </Text>
                             <Text style={styles.popupDetails}>City: {selectedMarker.city}</Text>
-                            <View style={styles.tagsContainer}>
-                                {selectedMarker.tags.map((tag: string, index: number) => (
-                                    <View key={index} style={styles.tag}>
-                                        <Text style={styles.tagText}>{tag}</Text>
-                                    </View>
-                                ))}
-                            </View>
                             <TouchableOpacity
                                 style={styles.closeButton}
                                 onPress={handleClosePopup}
@@ -182,12 +275,7 @@ export default function App() {
                 </Animated.View>
             )}
 
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setModalVisible(false)}
-            >
+            <Modal visible={modalVisible} animationType="slide" transparent={true}>
                 <KeyboardAvoidingView
                     style={styles.fullscreenModalContainer}
                     behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -196,7 +284,7 @@ export default function App() {
                         <View style={styles.fullscreenModalContent}>
                             <Text style={styles.modalTitle}>Add Event</Text>
                             <TextInput
-                                placeholder="Address/Title"
+                                placeholder="Title"
                                 value={newMarker.title}
                                 onChangeText={(text) => setNewMarker({ ...newMarker, title: text })}
                                 style={styles.input}
@@ -249,7 +337,7 @@ export default function App() {
                                     style={[styles.modalButton, styles.addButtonInModal]}
                                     onPress={handleAddMarker}
                                 >
-                                    <Text style={styles.modalButtonText}>ADD MARKER</Text>
+                                    <Text style={styles.modalButtonText}>ADD EVENT</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -259,6 +347,8 @@ export default function App() {
         </View>
     );
 }
+
+
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
@@ -339,7 +429,7 @@ const styles = StyleSheet.create({
         height: 200,
         justifyContent: "flex-end",
     },
-    overlay: { padding: 20, backgroundColor: "rgba(0,0,0,0.5)" },
+    overlay: { padding: 33, backgroundColor: "rgba(0,0,0,0.5)" },
     popupTitle: { fontSize: 18, fontWeight: "bold", color: "white" },
     popupDescription: { fontSize: 14, color: "white", marginBottom: 5 },
     popupDetails: { fontSize: 12, color: "white" },
@@ -361,3 +451,4 @@ const styles = StyleSheet.create({
     },
     closeButtonText: { color: "white", fontWeight: "bold" },
 });
+
