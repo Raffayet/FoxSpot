@@ -19,6 +19,7 @@ import axios from "axios";
 import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
 import { FontAwesome } from "@expo/vector-icons";
+import {getEventTypeDetails} from "@/util/eventTypes";
 
 export default function App() {
     const [events, setEvents] = useState<any[]>([]);
@@ -80,7 +81,7 @@ export default function App() {
 
             if (response.data.length > 0) {
                 const { lat, lon } = response.data[0];
-                const tags = assignTags(newMarker.eventType);
+                const { icon, tags, color } = getEventTypeDetails(newMarker.eventType);
 
                 // Explicitly include the `address` field
                 const markerWithCoordinates = {
@@ -109,25 +110,6 @@ export default function App() {
     };
 
 
-    const assignTags = (eventType: string) => {
-        switch (eventType.toLowerCase()) {
-            case "party":
-                return ["Music", "Dance", "Fun"];
-            case "culture":
-                return ["Art", "History", "Exhibition"];
-            case "meeting":
-                return ["Business", "Networking", "Discussion"];
-            case "work":
-                return ["Productivity", "Teamwork", "Focus"];
-            case "dinner":
-                return ["Food", "Friends", "Relax"];
-            case "exercise":
-                return ["Fitness", "Health", "Energy"];
-            default:
-                return ["General"];
-        }
-    };
-
     const handleMarkerPress = (event: any) => {
         setSelectedMarker({
             ...event,
@@ -144,24 +126,7 @@ export default function App() {
         );
     };
 
-    const getEventDetails = (eventType: string) => {
-        switch (eventType.toLowerCase()) {
-            case "party":
-                return { icon: "music", tag: "Party", color: "#FF5733" };
-            case "culture":
-                return { icon: "university", tag: "Culture", color: "#33A2FF" };
-            case "meeting":
-                return { icon: "handshake-o", tag: "Meeting", color: "#33FF57" };
-            case "work":
-                return { icon: "briefcase", tag: "Work", color: "#FFC300" };
-            case "dinner":
-                return { icon: "cutlery", tag: "Dinner", color: "#C70039" };
-            case "exercise":
-                return { icon: "bicycle", tag: "Exercise", color: "#8C33FF" };
-            default:
-                return { icon: "circle", tag: "General", color: "#555555" };
-        }
-    };
+
 
     return (
         <View style={styles.container}>
@@ -181,11 +146,11 @@ export default function App() {
                             <Text style={styles.popupDetails}>Event: {selectedMarker.eventType}</Text>
                             <Text style={styles.popupDetails}>City: {selectedMarker.city}</Text>
                             {(() => {
-                                const { icon, tag, color } = getEventDetails(selectedMarker.eventType);
+                                const { icon, tags, color } = getEventTypeDetails(selectedMarker.eventType);
                                 return (
                                     <View style={[styles.tagWithIcon, { backgroundColor: color }]}>
                                         <FontAwesome name={icon} size={16} color="#FFF" style={styles.tagIcon} />
-                                        <Text style={styles.tagText}>{tag}</Text>
+                                        <Text style={styles.tagText}>{(tags as string[])[0]}</Text>
                                     </View>
                                 );
                             })()}
