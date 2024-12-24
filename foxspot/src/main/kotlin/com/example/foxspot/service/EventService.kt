@@ -25,4 +25,31 @@ class EventService(
             throw RuntimeException("Event with ID $id not found")
         }
     }
+
+    fun updateEvent(id: String, updatedEvent: Event): Event {
+        val existingEvent = eventRepository.findById(id)
+        if (existingEvent.isPresent) {
+            val eventToUpdate = existingEvent.get().copy(
+                    name = updatedEvent.name,
+                    address = updatedEvent.address,
+                    city = updatedEvent.city,
+                    eventType = updatedEvent.eventType,
+                    description = updatedEvent.description,
+                    image = updatedEvent.image,
+                    location = updatedEvent.location
+            )
+
+            // Ensure the `id` is preserved to avoid creating a new document
+            eventToUpdate.id = id
+
+            return eventRepository.save(eventToUpdate)
+        } else {
+            throw RuntimeException("Event with ID $id not found")
+        }
+    }
+
+
+
+
+
 }
