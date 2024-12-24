@@ -126,7 +126,42 @@ export default function App() {
         );
     };
 
+    const handleDeleteEvent = async () => {
+        if (!selectedMarker) return;
 
+        try {
+            await EventService.deleteEvent(selectedMarker.id); // Assuming `id` is the unique identifier
+            setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedMarker.id));
+            alert("Event deleted successfully!");
+            setPopupVisible(false);
+        } catch (error) {
+            console.error("Error deleting event:", error);
+            alert("Failed to delete event. Please try again.");
+        }
+    };
+
+    const handleSaveChanges = async () => {
+        if (!selectedMarker) return;
+
+        try {
+            // Perform PUT request with the updated `selectedMarker`
+            await EventService.updateEvent(selectedMarker.id, selectedMarker);
+
+            // Update the state to reflect changes without creating new objects
+            setEvents((prevEvents) =>
+                prevEvents.map((event) =>
+                    event.id === selectedMarker.id ? { ...event, ...selectedMarker } : event
+                )
+            );
+
+            alert("Event updated successfully!");
+            setPopupVisible(false);
+
+        } catch (error) {
+            console.error("Error updating event:", error);
+            alert("Failed to update event. Please try again.");
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -138,13 +173,31 @@ export default function App() {
 
             {popupVisible && selectedMarker && (
                 <Animated.View style={[styles.popup, { transform: [{ translateY: popupAnim }] }]}>
-
                     <ImageBackground source={{ uri: selectedMarker.image }} style={styles.popupImage}>
                         <View style={styles.overlay}>
-                            <Text style={styles.popupTitle}>{selectedMarker.name}</Text>
-                            <Text style={styles.popupDescription}>{selectedMarker.description}</Text>
-                            <Text style={styles.popupDetails}>Event: {selectedMarker.eventType}</Text>
-                            <Text style={styles.popupDetails}>City: {selectedMarker.city}</Text>
+                            <TextInput
+                                style={styles.popupTitle}
+                                value={selectedMarker.name}
+                                onChangeText={(text) => setSelectedMarker({ ...selectedMarker, name: text })}
+                                placeholder="Event Name"
+                                placeholderTextColor="rgba(255,255,255,0.7)"
+                            />
+                            <TextInput
+                                style={styles.popupDescription}
+                                value={selectedMarker.description}
+                                onChangeText={(text) => setSelectedMarker({ ...selectedMarker, description: text })}
+                                placeholder="Event Description"
+                                placeholderTextColor="rgba(255,255,255,0.7)"
+                                multiline
+                            />
+
+                            <TextInput
+                                style={styles.popupDetails}
+                                value={selectedMarker.city}
+                                onChangeText={(text) => setSelectedMarker({ ...selectedMarker, city: text })}
+                                placeholder="City"
+                                placeholderTextColor="rgba(255,255,255,0.7)"
+                            />
                             {(() => {
                                 const { icon, tags, color } = getEventTypeDetails(selectedMarker.eventType);
                                 return (
@@ -156,17 +209,6 @@ export default function App() {
                             })()}
                         </View>
                     </ImageBackground>
-                    {/*<View style={styles.tagContainer}>*/}
-                    {/*    {(() => {*/}
-                    {/*        const { icon, tag, color } = getEventDetails(selectedMarker.eventType);*/}
-                    {/*        return (*/}
-                    {/*            <View style={[styles.tagWithIcon, { backgroundColor: color }]}>*/}
-                    {/*                <FontAwesome name={icon} size={16} color="#FFF" style={styles.tagIcon} />*/}
-                    {/*                <Text style={styles.tagText}>{tag}</Text>*/}
-                    {/*            </View>*/}
-                    {/*        );*/}
-                    {/*    })()}*/}
-                    {/*</View>*/}
                     <View style={styles.tagsContainer}>
                         {Array.isArray(selectedMarker?.tags) &&
                             selectedMarker.tags.map((tag: string, index: number) => (
@@ -175,9 +217,17 @@ export default function App() {
                                 </View>
                             ))}
                     </View>
-                    <TouchableOpacity style={styles.closeButton} onPress={handleClosePopup}>
-                        <Text style={styles.closeButtonText}>CLOSE</Text>
-                    </TouchableOpacity>
+                    <View style={styles.popupButtons}>
+                        <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
+                            <Text style={styles.saveButtonText}>SAVE</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteEvent}>
+                            <Text style={styles.deleteButtonText}>DELETE</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.closeButton} onPress={handleClosePopup}>
+                            <Text style={styles.closeButtonText}>CLOSE</Text>
+                        </TouchableOpacity>
+                    </View>
                 </Animated.View>
             )}
 
@@ -341,10 +391,10 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0, 0, 0, 0.4)",
     },
     popupTitle: {
-        fontSize: 20,
+        fontSize: 19,
         fontWeight: "bold",
         color: "#ffffff",
-        marginBottom: 5,
+        marginTop: 12,
     },
     popupDescription: {
         fontSize: 16,
@@ -371,16 +421,32 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     tagText: { color: "white", fontSize: 12 },
-    closeButton: {
+    popupButtons: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        marginTop: 10,
+    },
+    deleteButton: {
         backgroundColor: "#FF6347",
         borderRadius: 15,
         paddingVertical: 10,
         paddingHorizontal: 20,
-        alignSelf: "center",
-        marginTop: 20,
     },
-    closeButtonText: { color: "white", fontWeight: "bold" },
-
+    deleteButtonText: {
+        color: "white",
+        fontWeight: "bold",
+    },
+    closeButton: {
+        backgroundColor: "#007BFF",
+        borderRadius: 15,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+    closeButtonText: {
+        color: "white",
+        fontWeight: "bold",
+    },
     tagContainer: {
         flexDirection: "row",
         justifyContent: "center",
@@ -401,6 +467,18 @@ const styles = StyleSheet.create({
     tagIcon: {
         marginRight: 8,
 
+    },
+    saveButton: {
+        backgroundColor: "#32CD32",
+        borderRadius: 15,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        alignSelf: "center",
+
+    },
+    saveButtonText: {
+        color: "white",
+        fontWeight: "bold",
     },
 });
 
