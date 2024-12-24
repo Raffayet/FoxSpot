@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     Animated,
     Image,
@@ -16,16 +16,12 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import {EventService} from "@/service/event.service";
-import {Event} from '@/model/event'
-import Constants from "expo-constants/src/Constants";
+import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
-import {useFonts} from "expo-font";
-
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function App() {
-    const [events, setEvents] = useState<any>([])
-    const [markers, setMarkers] = useState<any[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMarker, setSelectedMarker] = useState<any>(null);
@@ -41,18 +37,9 @@ export default function App() {
 
     useEffect(() => {
         EventService.getAllEvents()
-            .then((eventsData) => {
-                setEvents(eventsData);
-                console.log("Fetched Events:", eventsData);
-            })
-            .catch((error) => {
-                console.error("Error fetching events:", error);
-            });
+            .then((eventsData) => setEvents(eventsData))
+            .catch((error) => console.error("Error fetching events:", error));
     }, []);
-
-    useEffect(() => {
-        console.log("Updated Events State:", events);
-    }, [events]);
 
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -68,65 +55,9 @@ export default function App() {
         });
 
         if (!result.canceled && result.assets.length > 0) {
-            setNewMarker({
-                ...newMarker,
-                image: result.assets[0].uri,
-            });
-        } else {
-            alert("No image selected.");
+            setNewMarker({ ...newMarker, image: result.assets[0].uri });
         }
     };
-
-    // const handleAddMarker = async () => {
-    //     if (
-    //         !newMarker.title ||
-    //         !newMarker.description ||
-    //         !newMarker.city ||
-    //         !newMarker.eventType ||
-    //         !newMarker.image
-    //     ) {
-    //         alert("Please fill in all fields and select an image.");
-    //         return;
-    //     }
-    //
-    //     try {
-    //         const fullAddress = `${newMarker.title}, ${newMarker.city}`;
-    //         const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-    //             params: {
-    //                 q: fullAddress,
-    //                 format: "json",
-    //             },
-    //             headers: {
-    //                 "User-Agent": "YourAppName/1.0 (your-email@example.com)",
-    //             },
-    //         });
-    //
-    //         if (response.data.length > 0) {
-    //             const { lat, lon } = response.data[0];
-    //             const markerWithCoordinates = {
-    //                 ...newMarker,
-    //                 latitude: parseFloat(lat),
-    //                 longitude: parseFloat(lon),
-    //                 tags: newMarker.eventType === "Party" ? ["Music", "Dance"] : ["General"],
-    //             };
-    //
-    //             setMarkers([...markers, markerWithCoordinates]);
-    //             setModalVisible(false);
-    //             setNewMarker({
-    //                 title: "",
-    //                 description: "",
-    //                 city: "",
-    //                 eventType: "",
-    //                 image: "",
-    //                 tags: [],
-    //             });
-    //         } else {
-    //             alert("Address not found. Please try again with more details.");
-    //         }
-    //     } catch (error) {
-    //         alert("Failed to geocode the address. Please check your internet connection.");
-    //     }
-    // };
 
     const handleAddMarker = async () => {
         if (
@@ -143,137 +74,148 @@ export default function App() {
         try {
             const fullAddress = `${newMarker.title}, ${newMarker.city}`;
             const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-                params: {
-                    q: fullAddress,
-                    format: "json",
-                },
-                headers: {
-                    "User-Agent": "YourAppName/1.0 (your-email@example.com)",
-                },
+                params: { q: fullAddress, format: "json" },
+                headers: { "User-Agent": "YourAppName/1.0 (your-email@example.com)" },
             });
 
             if (response.data.length > 0) {
                 const { lat, lon } = response.data[0];
+                const tags = assignTags(newMarker.eventType);
 
-                // Assign tags based on the event type
-                let tags = [];
-                switch (newMarker.eventType.toLowerCase()) {
-                    case "party":
-                        tags = ["Music", "Dance", "Fun"];
-                        break;
-                    case "culture":
-                        tags = ["Art", "History", "Exhibition"];
-                        break;
-                    case "meeting":
-                        tags = ["Business", "Networking", "Discussion"];
-                        break;
-                    case "work":
-                        tags = ["Productivity", "Teamwork", "Focus"];
-                        break;
-                    case "dinner":
-                        tags = ["Food", "Friends", "Relax"];
-                        break;
-                    case "exercise":
-                        tags = ["Fitness", "Health", "Energy"];
-                        break;
-                    default:
-                        tags = ["General"];
-                }
-
+                // Explicitly include the `address` field
                 const markerWithCoordinates = {
-                    name: newMarker.title, // Name
-                    address: newMarker.title, // Address
-                    city: newMarker.city, // City
-                    eventType: newMarker.eventType, // Type of Event
-                    description: newMarker.description, // Description
-                    image: newMarker.image, // Image URL
-                    tags, // Tags dynamically assigned
-                    location: { lat: parseFloat(lat), long: parseFloat(lon) }, // Latitude and Longitude
+                    name: newMarker.title,
+                    address: fullAddress, // Ensure address is included
+                    city: newMarker.city,
+                    eventType: newMarker.eventType,
+                    description: newMarker.description,
+                    image: newMarker.image,
+                    tags,
+                    location: { lat: parseFloat(lat), long: parseFloat(lon) },
                 };
 
-                // Save the event using EventService
                 const savedEvent = await EventService.createEvent(markerWithCoordinates);
-
-                // Update the events state directly to include the new event
                 setEvents((prevEvents) => [...prevEvents, savedEvent]);
 
                 setModalVisible(false);
-                setNewMarker({
-                    title: "",
-                    description: "",
-                    city: "",
-                    eventType: "",
-                    image: "",
-                    tags: [],
-                });
+                setNewMarker({ title: "", description: "", city: "", eventType: "", image: "", tags: [] });
             } else {
-                alert("Address not found. Please try again with more details.");
+                alert("Address not found.");
             }
         } catch (error) {
-            console.error("Failed to save the event:", error);
-            alert("Failed to save the event. Please check your internet connection.");
+            console.error("Error saving event:", error);
+            alert("Error saving event. Please try again.");
         }
     };
 
 
-
-
-    const handleMarkerPress = (event: Event) => {
-        setSelectedMarker(event);
-        setPopupVisible(true);
-        Animated.timing(popupAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
+    const assignTags = (eventType: string) => {
+        switch (eventType.toLowerCase()) {
+            case "party":
+                return ["Music", "Dance", "Fun"];
+            case "culture":
+                return ["Art", "History", "Exhibition"];
+            case "meeting":
+                return ["Business", "Networking", "Discussion"];
+            case "work":
+                return ["Productivity", "Teamwork", "Focus"];
+            case "dinner":
+                return ["Food", "Friends", "Relax"];
+            case "exercise":
+                return ["Fitness", "Health", "Energy"];
+            default:
+                return ["General"];
+        }
     };
 
+    const handleMarkerPress = (event: any) => {
+        setSelectedMarker({
+            ...event,
+            tags: event.tags || [], // Ensure tags is always an array
+        });
+        setPopupVisible(true);
+        Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+    };
+
+
     const handleClosePopup = () => {
-        Animated.timing(popupAnim, {
-            toValue: 300,
-            duration: 300,
-            useNativeDriver: true,
-        }).start(() => setPopupVisible(false));
+        Animated.timing(popupAnim, { toValue: 300, duration: 300, useNativeDriver: true }).start(() =>
+            setPopupVisible(false)
+        );
+    };
+
+    const getEventDetails = (eventType: string) => {
+        switch (eventType.toLowerCase()) {
+            case "party":
+                return { icon: "music", tag: "Party", color: "#FF5733" };
+            case "culture":
+                return { icon: "university", tag: "Culture", color: "#33A2FF" };
+            case "meeting":
+                return { icon: "handshake-o", tag: "Meeting", color: "#33FF57" };
+            case "work":
+                return { icon: "briefcase", tag: "Work", color: "#FFC300" };
+            case "dinner":
+                return { icon: "cutlery", tag: "Dinner", color: "#C70039" };
+            case "exercise":
+                return { icon: "bicycle", tag: "Exercise", color: "#8C33FF" };
+            default:
+                return { icon: "circle", tag: "General", color: "#555555" };
+        }
     };
 
     return (
         <View style={styles.container}>
             <MapComponent events={events} onMarkerPress={handleMarkerPress} />
 
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setModalVisible(true)}
-            >
+            <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <Text style={styles.addButtonText}>ADD EVENT</Text>
             </TouchableOpacity>
 
             {popupVisible && selectedMarker && (
-                <Animated.View
-                    style={[styles.popup, { transform: [{ translateY: popupAnim }] }]}
-                >
-                    <ImageBackground
-                        source={{ uri: selectedMarker.image }}
-                        style={styles.popupImage}
-                    >
+                <Animated.View style={[styles.popup, { transform: [{ translateY: popupAnim }] }]}>
+
+                    <ImageBackground source={{ uri: selectedMarker.image }} style={styles.popupImage}>
                         <View style={styles.overlay}>
                             <Text style={styles.popupTitle}>{selectedMarker.name}</Text>
-                            <Text style={styles.popupDescription}>
-                                {selectedMarker.description}
-                            </Text>
-                            <Text style={styles.popupDetails}>
-                                Event: {selectedMarker.eventType}
-                            </Text>
+                            <Text style={styles.popupDescription}>{selectedMarker.description}</Text>
+                            <Text style={styles.popupDetails}>Event: {selectedMarker.eventType}</Text>
                             <Text style={styles.popupDetails}>City: {selectedMarker.city}</Text>
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={handleClosePopup}
-                            >
-                                <Text style={styles.closeButtonText}>CLOSE</Text>
-                            </TouchableOpacity>
+                            {(() => {
+                                const { icon, tag, color } = getEventDetails(selectedMarker.eventType);
+                                return (
+                                    <View style={[styles.tagWithIcon, { backgroundColor: color }]}>
+                                        <FontAwesome name={icon} size={16} color="#FFF" style={styles.tagIcon} />
+                                        <Text style={styles.tagText}>{tag}</Text>
+                                    </View>
+                                );
+                            })()}
                         </View>
                     </ImageBackground>
+                    {/*<View style={styles.tagContainer}>*/}
+                    {/*    {(() => {*/}
+                    {/*        const { icon, tag, color } = getEventDetails(selectedMarker.eventType);*/}
+                    {/*        return (*/}
+                    {/*            <View style={[styles.tagWithIcon, { backgroundColor: color }]}>*/}
+                    {/*                <FontAwesome name={icon} size={16} color="#FFF" style={styles.tagIcon} />*/}
+                    {/*                <Text style={styles.tagText}>{tag}</Text>*/}
+                    {/*            </View>*/}
+                    {/*        );*/}
+                    {/*    })()}*/}
+                    {/*</View>*/}
+                    <View style={styles.tagsContainer}>
+                        {Array.isArray(selectedMarker?.tags) &&
+                            selectedMarker.tags.map((tag: string, index: number) => (
+                                <View key={index} style={styles.tag}>
+                                    <Text style={styles.tagText}>{tag}</Text>
+                                </View>
+                            ))}
+                    </View>
+                    <TouchableOpacity style={styles.closeButton} onPress={handleClosePopup}>
+                        <Text style={styles.closeButtonText}>CLOSE</Text>
+                    </TouchableOpacity>
                 </Animated.View>
             )}
+
 
             <Modal visible={modalVisible} animationType="slide" transparent={true}>
                 <KeyboardAvoidingView
@@ -298,33 +240,23 @@ export default function App() {
                             <TextInput
                                 placeholder="Type of Event"
                                 value={newMarker.eventType}
-                                onChangeText={(text) =>
-                                    setNewMarker({ ...newMarker, eventType: text })
-                                }
+                                onChangeText={(text) => setNewMarker({ ...newMarker, eventType: text })}
                                 style={styles.input}
                             />
                             <TextInput
                                 placeholder="Description"
                                 value={newMarker.description}
-                                onChangeText={(text) =>
-                                    setNewMarker({ ...newMarker, description: text })
-                                }
+                                onChangeText={(text) => setNewMarker({ ...newMarker, description: text })}
                                 style={styles.input}
                                 multiline
                             />
-                            <TouchableOpacity
-                                style={styles.imageButton}
-                                onPress={handleImagePick}
-                            >
+                            <TouchableOpacity style={styles.imageButton} onPress={handleImagePick}>
                                 <Text style={styles.imageButtonText}>
                                     {newMarker.image ? "Change Image" : "Select Image"}
                                 </Text>
                             </TouchableOpacity>
                             {newMarker.image && (
-                                <Image
-                                    source={{ uri: newMarker.image }}
-                                    style={styles.previewImage}
-                                />
+                                <Image source={{ uri: newMarker.image }} style={styles.previewImage} />
                             )}
                             <View style={styles.fullscreenModalButtonRow}>
                                 <TouchableOpacity
@@ -347,7 +279,6 @@ export default function App() {
         </View>
     );
 }
-
 
 
 const styles = StyleSheet.create({
@@ -421,34 +352,90 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         backgroundColor: "white",
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        overflow: "hidden",
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     popupImage: {
         height: 200,
-        justifyContent: "flex-end",
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        overflow: "hidden",
+        marginBottom: 10,
     },
-    overlay: { padding: 33, backgroundColor: "rgba(0,0,0,0.5)" },
-    popupTitle: { fontSize: 18, fontWeight: "bold", color: "white" },
-    popupDescription: { fontSize: 14, color: "white", marginBottom: 5 },
-    popupDetails: { fontSize: 12, color: "white" },
-    tagsContainer: { flexDirection: "row", marginTop: 10 },
+    overlay: {
+        flex: 1,
+        justifyContent: "flex-end",
+        padding: 15,
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
+    },
+    popupTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "#ffffff",
+        marginBottom: 5,
+    },
+    popupDescription: {
+        fontSize: 16,
+        color: "#ffffff",
+        marginBottom: 10,
+    },
+    popupDetails: {
+        fontSize: 14,
+        color: "#ffffff",
+        marginBottom: 5,
+    },
+    tagsContainer: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        marginTop: 10,
+        justifyContent: "center",
+    },
     tag: {
         backgroundColor: "#007BFF",
-        borderRadius: 10,
+        borderRadius: 15,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        marginRight: 5,
+        margin: 5,
+        alignItems: "center",
     },
     tagText: { color: "white", fontSize: 12 },
     closeButton: {
         backgroundColor: "#FF6347",
-        borderRadius: 10,
+        borderRadius: 15,
         paddingVertical: 10,
-        marginTop: 15,
-        alignItems: "center",
+        paddingHorizontal: 20,
+        alignSelf: "center",
+        marginTop: 20,
     },
     closeButtonText: { color: "white", fontWeight: "bold" },
+
+    tagContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        marginVertical: 10,
+    },
+    tagWithIcon: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        marginHorizontal: 5,
+        backgroundColor: "#FF5733",
+        elevation: 3,
+        width: "35%",
+    },
+    tagIcon: {
+        marginRight: 8,
+
+    },
 });
 

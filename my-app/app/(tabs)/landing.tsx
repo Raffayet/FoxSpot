@@ -8,9 +8,10 @@ import {
     Animated,
     Image,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 
-export default function LandingPage({ navigation }: any) {
+export default function LandingPage() {
+    const navigation = useNavigation(); // Use navigation hook
     const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity: 0
     const [translateYAnim] = useState(new Animated.Value(-30)); // Initial vertical offset: -50
 
@@ -59,7 +60,7 @@ export default function LandingPage({ navigation }: any) {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.exploreButton}
-                            onPress={() => navigation.navigate("Explore")}
+                            onPress={() => navigation.navigate("index")} // Navigate to index
                         >
                             <Text style={styles.exploreButtonText}>Explore</Text>
                             <Text style={styles.arrow}>➔</Text>
