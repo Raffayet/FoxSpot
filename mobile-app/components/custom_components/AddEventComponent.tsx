@@ -211,7 +211,6 @@ const styles = ScaledSheet.create({
         borderRadius: '10@s', // Scaled border radius
         margin: '20@s', // Scaled margin
         padding: '20@s', // Scaled padding
-        marginTop: '150@vs', // Scaled vertical margin
     },
     modalTitle: {
         fontSize: '22@s', // Scaled font size
