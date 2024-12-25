@@ -77,11 +77,11 @@ const styles = ScaledSheet.create({
     addButton: {
         position: "absolute",
         bottom: '20@vs',
-        right: '20@s',
         backgroundColor: "#007BFF",
         padding: '15@s',
         borderRadius: '50@s',
         elevation: 5,
+        alignSelf: "center"
     },
     addButtonText: {
         color: "white",
