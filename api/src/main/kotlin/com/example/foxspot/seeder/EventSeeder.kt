@@ -1,27 +1,15 @@
 package com.example.foxspot.seeder
 
-import com.example.foxspot.model.Event
-import com.example.foxspot.model.Point
+import com.example.foxspot.model.classes.Event
+import com.example.foxspot.model.classes.Point
 import com.example.foxspot.repository.EventRepository
-import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Component
 
 @Component
-class EventSeeder(private val eventRepository: EventRepository) {
+class EventSeeder(private val eventRepository: EventRepository): SeedCommon {
 
-    @PostConstruct
-    fun init() {
-        deleteSeedData()
-        createInitialNotes()
-    }
-
-    // Every time we run the app we must first delete the data from the previous runtime
-    private fun deleteSeedData() {
-        eventRepository.deleteAll()
-    }
-
-    private fun createInitialNotes() {
-        val notes = listOf(
+    override fun createSeedData() {
+        val events = listOf(
             Event(
                 name = "Coffee with Sarah",
                 address = "123 Main Street",
@@ -68,7 +56,10 @@ class EventSeeder(private val eventRepository: EventRepository) {
                 location = Point(45.2530, 19.8590)
             )
         )
-        eventRepository.saveAll(notes)
+        eventRepository.saveAll(events)
     }
 
+    override fun deleteSeedData() {
+        eventRepository.deleteAll()
+    }
 }

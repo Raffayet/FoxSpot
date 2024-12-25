@@ -1,4 +1,4 @@
-package com.example.foxspot.model
+package com.example.foxspot.model.classes
 
 class Point (
     val lat: Double,

@@ -1,6 +1,6 @@
 package com.example.foxspot.controller
 
-import com.example.foxspot.model.Event
+import com.example.foxspot.model.classes.Event
 import com.example.foxspot.service.EventService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
