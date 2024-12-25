@@ -29,13 +29,13 @@ class EventService(
         val existingEvent = eventRepository.findById(id)
         if (existingEvent.isPresent) {
             val eventToUpdate = existingEvent.get().copy(
-                    name = updatedEvent.name,
-                    address = updatedEvent.address,
-                    city = updatedEvent.city,
-                    eventType = updatedEvent.eventType,
-                    description = updatedEvent.description,
-                    image = updatedEvent.image,
-                    location = updatedEvent.location
+                name = updatedEvent.name,
+                address = updatedEvent.address,
+                city = updatedEvent.city,
+                eventType = updatedEvent.eventType,
+                description = updatedEvent.description,
+                image = updatedEvent.image,
+                location = updatedEvent.location
             )
 
             // Ensure the `id` is preserved to avoid creating a new document

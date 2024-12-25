@@ -8,4 +8,4 @@ class Pricing(
     var pricePerHour: Double?,
     var totalPrice: Double?,
     var currency: Currency? = Currency.EUR
-): Base()
+): BaseModel()

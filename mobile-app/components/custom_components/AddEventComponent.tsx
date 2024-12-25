@@ -15,7 +15,8 @@ import axios from "axios";
 import {getEventTypeDetails} from "@/util/eventTypes";
 import {EventService} from "@/service/event.service";
 import { Event } from "@/model/event";
-import {Marker} from "@/model/marker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
 
 interface Props {
     modalVisible: boolean
@@ -24,7 +25,7 @@ interface Props {
 }
 
 export default function AddEventComponent(props: Props) {
-    const [newMarker, setNewMarker] = useState<Marker>({
+    const [newEvent, setNewEvent] = useState<Event>({
         address: "",
         description: "",
         city: "",
@@ -32,6 +33,9 @@ export default function AddEventComponent(props: Props) {
         image: "",
         tags: [],
     });
+
+    const [startDatePickerVisible, setStartDatePickerVisible] = useState<boolean>()
+    const [endDatePickerVisible, setEndDatePickerVisible] = useState<boolean>()
 
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -47,24 +51,25 @@ export default function AddEventComponent(props: Props) {
         });
 
         if (!result.canceled && result.assets.length > 0) {
-            setNewMarker({ ...newMarker, image: result.assets[0].uri });
+            setNewEvent({ ...newEvent, image: result.assets[0].uri });
         }
     };
 
     const handleAddMarker = async () => {
         if (
-            !newMarker.address ||
-            !newMarker.description ||
-            !newMarker.city ||
-            !newMarker.eventType ||
-            !newMarker.image
+            !newEvent.address ||
+            !newEvent.description ||
+            !newEvent.city ||
+            !newEvent.eventType ||
+            !newEvent.startTime ||
+            !newEvent.endTime
         ) {
             alert("Please fill in all fields and select an image.");
             return;
         }
 
         try {
-            const fullAddress = `${newMarker.address}, ${newMarker.city}`;
+            const fullAddress = `${newEvent.address}, ${newEvent.city}`;
             const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
                 params: { q: fullAddress, format: "json" },
                 headers: { "User-Agent": "YourAppName/1.0 (your-email@example.com)" },
@@ -72,25 +77,28 @@ export default function AddEventComponent(props: Props) {
 
             if (response.data.length > 0) {
                 const { lat, lon } = response.data[0];
-                const { icon, tags, color } = getEventTypeDetails(newMarker.eventType);
+                const { icon, tags, color } = getEventTypeDetails(newEvent.eventType);
 
                 // Explicitly include the `address` field
-                const markerWithCoordinates = {
-                    name: newMarker.address,
+                const eventToCreate: Event = {
+                    name: newEvent.address,
                     address: fullAddress, // Ensure address is included
-                    city: newMarker.city,
-                    eventType: newMarker.eventType,
-                    description: newMarker.description,
-                    image: newMarker.image,
+                    city: newEvent.city,
+                    eventType: newEvent.eventType,
+                    description: newEvent.description,
+                    image: newEvent.image,
                     tags,
                     location: { lat: parseFloat(lat), long: parseFloat(lon) },
+
+                    startTime: newEvent.startTime,
+                    endTime: newEvent.endTime,
                 };
 
-                const savedEvent = await EventService.createEvent(markerWithCoordinates);
+                const savedEvent = await EventService.createEvent(eventToCreate);
                 props.setEvents((prevEvents: Event[]) => [...prevEvents, savedEvent]);
 
                 props.setModalVisible(false);
-                setNewMarker({ address: "", description: "", city: "", eventType: "", image: "", tags: [] });
+                setNewEvent({ address: "", description: "", city: "", eventType: "", image: "", tags: [] });
             } else {
                 alert("Address not found.");
             }
@@ -111,36 +119,63 @@ export default function AddEventComponent(props: Props) {
                         <Text style={styles.modalTitle}>Add Event</Text>
                         <TextInput
                             placeholder="Address"
-                            value={newMarker.address}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, address: text })}
+                            value={newEvent.address}
+                            onChangeText={(text) => setNewEvent({ ...newEvent, address: text })}
                             style={styles.input}
                         />
                         <TextInput
                             placeholder="City"
-                            value={newMarker.city}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, city: text })}
+                            value={newEvent.city}
+                            onChangeText={(text) => setNewEvent({ ...newEvent, city: text })}
                             style={styles.input}
                         />
                         <TextInput
                             placeholder="Type of Event"
-                            value={newMarker.eventType}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, eventType: text })}
+                            value={newEvent.eventType}
+                            onChangeText={(text) => setNewEvent({ ...newEvent, eventType: text })}
                             style={styles.input}
                         />
                         <TextInput
                             placeholder="Description"
-                            value={newMarker.description}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, description: text })}
+                            value={newEvent.description}
+                            onChangeText={(text) => setNewEvent({ ...newEvent, description: text })}
                             style={styles.input}
                             multiline
                         />
+                        <TouchableOpacity onPress={() => setStartDatePickerVisible(true)} style={styles.input}>
+                            <Text>{newEvent.startTime ? newEvent.startTime : "Pick Start Date & Time"}</Text>
+                        </TouchableOpacity>
+                        <DateTimePickerModal
+                            isVisible={startDatePickerVisible}
+                            mode="datetime"
+                            onConfirm={(datetime) => {
+                                // Converting to UTC format before sending to API
+                                setNewEvent({ ...newEvent, startTime: datetime.toISOString() });
+                                setStartDatePickerVisible(false);
+                            }}
+                            onCancel={() => setStartDatePickerVisible(false)}
+                        />
+
+                        <TouchableOpacity onPress={() => setEndDatePickerVisible(true)} style={styles.input}>
+                            <Text>{newEvent.endTime ? newEvent.endTime : "Pick End Date & Time"}</Text>
+                        </TouchableOpacity>
+                        <DateTimePickerModal
+                            isVisible={endDatePickerVisible}
+                            mode="datetime"
+                            onConfirm={(datetime) => {
+                                // Converting to UTC format before sending to API
+                                setNewEvent({ ...newEvent, endTime: datetime.toISOString() });
+                                setEndDatePickerVisible(false);
+                            }}
+                            onCancel={() => setEndDatePickerVisible(false)}
+                        />
                         <TouchableOpacity style={styles.imageButton} onPress={handleImagePick}>
                             <Text style={styles.imageButtonText}>
-                                {newMarker.image ? "Change Image" : "Select Image"}
+                                {newEvent.image ? "Change Image" : "Select Image"}
                             </Text>
                         </TouchableOpacity>
-                        {newMarker.image && (
-                            <Image source={{ uri: newMarker.image }} style={styles.previewImage} />
+                        {newEvent.image && (
+                            <Image source={{ uri: newEvent.image }} style={styles.previewImage} />
                         )}
                         <View style={styles.fullscreenModalButtonRow}>
                             <TouchableOpacity
@@ -175,7 +210,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         margin: 20,
         padding: 20,
-        marginTop: 200
+        marginTop: 150
     },
     modalTitle: {
         fontSize: 22,

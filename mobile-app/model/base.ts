@@ -1,6 +1,6 @@
-export class Base {
-    id: string;
-    constructor(id: string) {
-        this.id = id;
-    }
+export interface BaseModel {
+    id?: string;
+    insertDate?: Date;
+    updateDate?: Date;
+    meta?: any
 }

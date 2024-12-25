@@ -1,5 +1,3 @@
-import {Base} from "@/model/base";
-
 export interface Marker{
     address: string,
     description: string,
