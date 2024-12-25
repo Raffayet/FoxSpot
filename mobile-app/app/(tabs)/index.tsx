@@ -10,12 +10,14 @@ import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
 import EventDetailsComponent from "@/components/custom_components/EventDetailsComponent";
 import AddEventComponent from "@/components/custom_components/AddEventComponent";
+import { Event } from "@/model/event";
+import {Marker} from "@/model/marker";
 
-function App() {
-    const [events, setEvents] = useState<any[]>([]);
+export default function App() {
+    const [events, setEvents] = useState<Event[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
-    const [selectedMarker, setSelectedMarker] = useState<any>(null);
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const popupAnim = useRef(new Animated.Value(300)).current; // Slide from bottom
 
     useEffect(() => {
@@ -24,10 +26,10 @@ function App() {
             .catch((error) => console.error("Error fetching events:", error));
     }, []);
 
-    const handleMarkerPress = (event: any) => {
-        setSelectedMarker({
+    const handleMarkerPress = (event: Event) => {
+        setSelectedEvent({
             ...event,
-            tags: event.tags || [], // Ensure tags is always an array
+            tags: event.tags || [],
         });
         setPopupVisible(true);
         Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
@@ -47,12 +49,12 @@ function App() {
                 <Text style={styles.addButtonText}>ADD EVENT</Text>
             </TouchableOpacity>
 
-            {popupVisible && selectedMarker && (
+            {popupVisible && selectedEvent && (
                 <EventDetailsComponent
-                    selectedMarker={selectedMarker}
+                    selectedEvent={selectedEvent}
                     popupAnim={popupAnim}
                     setEvents={setEvents}
-                    setSelectedMarker={setSelectedMarker}
+                    setSelectedEvent={setSelectedEvent}
                     setPopupVisible={setPopupVisible}
                     handleClosePopup={handleClosePopup}
                 />

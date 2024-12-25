@@ -3,23 +3,24 @@ import {getEventTypeDetails} from "@/util/eventTypes";
 import {FontAwesome} from "@expo/vector-icons";
 import React, {useRef} from "react";
 import {EventService} from "@/service/event.service";
+import { Event } from "@/model/event";
 
 interface Props {
-    selectedMarker: any
+    selectedEvent: Event
     popupAnim: Animated.Value
-    setEvents: (events: any) => void
+    setEvents: (update: Event[] | ((prevEvents: Event[]) => Event[])) => void;
     setPopupVisible: (visible: boolean) => void
-    setSelectedMarker: (marker: any) => void
+    setSelectedEvent: (event: Event) => void
     handleClosePopup: () => void
 }
 
 export default function EventDetailsComponent(props: Props) {
     const handleDeleteEvent = async () => {
-        if (!props.selectedMarker) return;
+        if (!props.selectedEvent) return;
 
         try {
-            await EventService.deleteEvent(props.selectedMarker.id); // Assuming `id` is the unique identifier
-            props.setEvents((prevEvents: any[]) => prevEvents.filter((event) => event.id !== props.selectedMarker.id));
+            await EventService.deleteEvent(props.selectedEvent.id); // Assuming `id` is the unique identifier
+            props.setEvents((prevEvents: Event[]) => prevEvents.filter((event: Event) => event.id !== props.selectedEvent.id));
             alert("Event deleted successfully!");
             props.setPopupVisible(false);
         } catch (error) {
@@ -29,16 +30,16 @@ export default function EventDetailsComponent(props: Props) {
     };
 
     const handleSaveChanges = async () => {
-        if (!props.selectedMarker) return;
+        if (!props.selectedEvent) return;
 
         try {
             // Perform PUT request with the updated `selectedMarker`
-            await EventService.updateEvent(props.selectedMarker.id, props.selectedMarker);
+            await EventService.updateEvent(props.selectedEvent.id, props.selectedEvent);
 
             // Update the state to reflect changes without creating new objects
-            props.setEvents((prevEvents: any[]) =>
+            props.setEvents((prevEvents: Event[]) =>
                 prevEvents.map((event) =>
-                    event.id === props.selectedMarker.id ? { ...event, ...props.selectedMarker } : event
+                    event.id === props.selectedEvent.id ? { ...event, ...props.selectedEvent } : event
                 )
             );
 
@@ -53,19 +54,19 @@ export default function EventDetailsComponent(props: Props) {
 
     return(
         <Animated.View style={[styles.popup, { transform: [{ translateY: props.popupAnim }] }]}>
-            <ImageBackground source={{ uri: props.selectedMarker.image }} style={styles.popupImage}>
+            <ImageBackground source={{ uri: props.selectedEvent.image }} style={styles.popupImage}>
                 <View style={styles.overlay}>
                     <TextInput
                         style={styles.popupTitle}
-                        value={props.selectedMarker.name || ""}
-                        onChangeText={(text) => props.setSelectedMarker({ ...props.selectedMarker, name: text })}
+                        value={props.selectedEvent.name || ""}
+                        onChangeText={(text) => props.setSelectedEvent({ ...props.selectedEvent, name: text })}
                         placeholder="Event Name"
                         placeholderTextColor="rgba(255,255,255,0.7)"
                     />
                     <TextInput
                         style={styles.popupDescription}
-                        value={props.selectedMarker.description}
-                        onChangeText={(text) => props.setSelectedMarker({ ...props.selectedMarker, description: text })}
+                        value={props.selectedEvent.description}
+                        onChangeText={(text) => props.setSelectedEvent({ ...props.selectedEvent, description: text })}
                         placeholder="Event Description"
                         placeholderTextColor="rgba(255,255,255,0.7)"
                         multiline
@@ -73,13 +74,13 @@ export default function EventDetailsComponent(props: Props) {
 
                     <TextInput
                         style={styles.popupDetails}
-                        value={props.selectedMarker.city}
-                        onChangeText={(text) => props.setSelectedMarker({ ...props.selectedMarker, city: text })}
+                        value={props.selectedEvent.city}
+                        onChangeText={(text) => props.setSelectedEvent({ ...props.selectedEvent, city: text })}
                         placeholder="City"
                         placeholderTextColor="rgba(255,255,255,0.7)"
                     />
                     {(() => {
-                        const { icon, tags, color } = getEventTypeDetails(props.selectedMarker?.eventType || "");
+                        const { icon, tags, color } = getEventTypeDetails(props.selectedEvent?.eventType || "");
                         return (
                             <View style={[styles.tagWithIcon, { backgroundColor: color }]}>
                                 <FontAwesome name={icon} size={16} color="#FFF" style={styles.tagIcon} />
@@ -90,8 +91,8 @@ export default function EventDetailsComponent(props: Props) {
                 </View>
             </ImageBackground>
             <View style={styles.tagsContainer}>
-                {Array.isArray(props.selectedMarker?.tags) &&
-                    props.selectedMarker.tags.map((tag: string, index: number) => (
+                {Array.isArray(props.selectedEvent?.tags) &&
+                    props.selectedEvent.tags.map((tag: string, index: number) => (
                         <View key={index} style={styles.tag}>
                             <Text style={styles.tagText}>{tag}</Text>
                         </View>

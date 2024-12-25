@@ -5,7 +5,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Event } from "@/model/event";
 import {getEventTypeDetails} from "@/util/eventTypes";
 
-export interface Props extends MapViewProps {
+export interface Props {
     events: Event[];
     onMarkerPress: (event: Event) => void;
 }

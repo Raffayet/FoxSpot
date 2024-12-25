@@ -14,16 +14,18 @@ import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import {getEventTypeDetails} from "@/util/eventTypes";
 import {EventService} from "@/service/event.service";
+import { Event } from "@/model/event";
+import {Marker} from "@/model/marker";
 
 interface Props {
     modalVisible: boolean
-    setEvents: (events: any) => void
+    setEvents: (update: Event[] | ((prevEvents: Event[]) => Event[])) => void;
     setModalVisible: (visible: boolean) => void
 }
 
 export default function AddEventComponent(props: Props) {
-    const [newMarker, setNewMarker] = useState({
-        title: "",
+    const [newMarker, setNewMarker] = useState<Marker>({
+        address: "",
         description: "",
         city: "",
         eventType: "",
@@ -51,7 +53,7 @@ export default function AddEventComponent(props: Props) {
 
     const handleAddMarker = async () => {
         if (
-            !newMarker.title ||
+            !newMarker.address ||
             !newMarker.description ||
             !newMarker.city ||
             !newMarker.eventType ||
@@ -62,7 +64,7 @@ export default function AddEventComponent(props: Props) {
         }
 
         try {
-            const fullAddress = `${newMarker.title}, ${newMarker.city}`;
+            const fullAddress = `${newMarker.address}, ${newMarker.city}`;
             const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
                 params: { q: fullAddress, format: "json" },
                 headers: { "User-Agent": "YourAppName/1.0 (your-email@example.com)" },
@@ -74,7 +76,7 @@ export default function AddEventComponent(props: Props) {
 
                 // Explicitly include the `address` field
                 const markerWithCoordinates = {
-                    name: newMarker.title,
+                    name: newMarker.address,
                     address: fullAddress, // Ensure address is included
                     city: newMarker.city,
                     eventType: newMarker.eventType,
@@ -85,10 +87,10 @@ export default function AddEventComponent(props: Props) {
                 };
 
                 const savedEvent = await EventService.createEvent(markerWithCoordinates);
-                props.setEvents((prevEvents: any) => [...prevEvents, savedEvent]);
+                props.setEvents((prevEvents: Event[]) => [...prevEvents, savedEvent]);
 
                 props.setModalVisible(false);
-                setNewMarker({ title: "", description: "", city: "", eventType: "", image: "", tags: [] });
+                setNewMarker({ address: "", description: "", city: "", eventType: "", image: "", tags: [] });
             } else {
                 alert("Address not found.");
             }
@@ -108,9 +110,9 @@ export default function AddEventComponent(props: Props) {
                     <View style={styles.fullscreenModalContent}>
                         <Text style={styles.modalTitle}>Add Event</Text>
                         <TextInput
-                            placeholder="Title"
-                            value={newMarker.title}
-                            onChangeText={(text) => setNewMarker({ ...newMarker, title: text })}
+                            placeholder="Address"
+                            value={newMarker.address}
+                            onChangeText={(text) => setNewMarker({ ...newMarker, address: text })}
                             style={styles.input}
                         />
                         <TextInput
@@ -162,14 +164,18 @@ export default function AddEventComponent(props: Props) {
 }
 
 const styles = StyleSheet.create({
-    fullscreenModalContainer: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" },
+    fullscreenModalContainer: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "center",
+    },
     fullscreenModalContent: {
         flex: 0,
         backgroundColor: "white",
         borderRadius: 10,
         margin: 20,
         padding: 20,
-        justifyContent: "center",
+        marginTop: 200
     },
     modalTitle: {
         fontSize: 22,
