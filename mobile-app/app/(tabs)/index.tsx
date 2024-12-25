@@ -12,6 +12,7 @@ import EventDetailsComponent from "@/components/custom_components/EventDetailsCo
 import AddEventComponent from "@/components/custom_components/AddEventComponent";
 import { Event } from "@/model/event";
 import {Marker} from "@/model/marker";
+import {ScaledSheet} from "react-native-size-matters";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -69,23 +70,29 @@ export default function App() {
 }
 
 
-const styles = StyleSheet.create({
-    container: { flex: 1 },
+const styles = ScaledSheet.create({
+    container: {
+        flex: 1
+    },
     addButton: {
         position: "absolute",
-        bottom: 20,
-        right: 20,
+        bottom: '20@vs',
+        right: '20@s',
         backgroundColor: "#007BFF",
-        padding: 15,
-        borderRadius: 50,
+        padding: '15@s',
+        borderRadius: '50@s',
         elevation: 5,
     },
-    addButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+    addButtonText: {
+        color: "white",
+        fontSize: '16@s',
+        fontWeight: "bold"
+    },
     tagContainer: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginVertical: 10,
+        marginVertical: '10@vs',
     },
 });
 

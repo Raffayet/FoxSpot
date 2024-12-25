@@ -9,6 +9,7 @@ import {
     Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import {ScaledSheet} from "react-native-size-matters";
 
 export default function LandingPage() {
     const navigation = useNavigation(); // Use navigation hook
@@ -72,7 +73,7 @@ export default function LandingPage() {
     );
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
     container: {
         flex: 1,
     },
@@ -86,28 +87,28 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "rgba(0, 0, 0, 0.5)", // Dark overlay
-        paddingHorizontal: 20,
+        paddingHorizontal: '20@s',
     },
     textContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 100,
+        marginTop: '100@s',
     },
     title: {
-        fontSize: 50,
+        fontSize: '50@s',
         fontFamily: "Poppins-Bold,sans-serif",
         color: "#fff",
         textAlign: "center",
-        marginBottom: 10,
+        marginBottom: '10@s',
         fontWeight: "bold",
     },
     subtitle: {
-        fontSize: 19,
+        fontSize: '19@s',
         fontFamily: "Aryzena-Regular",
         color: "#e0e0e0",
         textAlign: "center",
-        marginTop: 10,
+        marginTop: '10@s',
         fontStyle: "italic",
         fontWeight: "bold",
     },
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: "column",
         alignItems: "center",
-        marginBottom: 50,
+        marginBottom: '50@s',
         width: "100%",
     },
     googleButton: {
@@ -127,44 +128,44 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#ffffff",
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        borderRadius: 50,
+        paddingVertical: '15@s',
+        paddingHorizontal: '20@s',
+        borderRadius: '50@s',
         width: "80%",
-        marginBottom: 20,
-        borderWidth: 1,
+        marginBottom: '20@s',
+        borderWidth: '1@s',
         borderColor: "#ccc",
     },
     googleButtonText: {
         color: "#000",
-        fontSize: 16,
+        fontSize: '16@s',
         fontWeight: "bold",
-        marginLeft: 10,
+        marginLeft: '10@s',
     },
     exploreButton: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#d5b43e",
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        borderRadius: 50,
+        paddingVertical: '15@s',
+        paddingHorizontal: '20@s',
+        borderRadius: '50@s',
         width: "80%",
     },
     exploreButtonText: {
         color: "#fff",
-        fontSize: 16,
+        fontSize: '16@s',
         fontWeight: "bold",
-        marginRight: 10,
+        marginRight: '10@s',
     },
     iconImage: {
-        width: 20,
-        height: 20,
-        marginRight: 10,
+        width: '20@s',
+        height: '20@s',
+        marginRight: '10@s',
     },
     arrow: {
-        fontSize: 18,
+        fontSize: '18@s',
         color: "#fff",
-        marginLeft: 5,
+        marginLeft: '5@s',
     },
 });

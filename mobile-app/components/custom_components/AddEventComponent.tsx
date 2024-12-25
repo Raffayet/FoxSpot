@@ -16,6 +16,7 @@ import {getEventTypeDetails} from "@/util/eventTypes";
 import {EventService} from "@/service/event.service";
 import { Event } from "@/model/event";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import {ScaledSheet} from "react-native-size-matters";
 
 
 interface Props {
@@ -198,7 +199,7 @@ export default function AddEventComponent(props: Props) {
     )
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
     fullscreenModalContainer: {
         flex: 1,
         backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -207,36 +208,46 @@ const styles = StyleSheet.create({
     fullscreenModalContent: {
         flex: 0,
         backgroundColor: "white",
-        borderRadius: 10,
-        margin: 20,
-        padding: 20,
-        marginTop: 150
+        borderRadius: '10@s', // Scaled border radius
+        margin: '20@s', // Scaled margin
+        padding: '20@s', // Scaled padding
+        marginTop: '150@vs', // Scaled vertical margin
     },
     modalTitle: {
-        fontSize: 22,
+        fontSize: '22@s', // Scaled font size
         fontWeight: "bold",
-        marginBottom: 15,
+        marginBottom: '15@vs', // Scaled vertical margin
         textAlign: "center",
     },
-    scrollContent: { flexGrow: 1 },
+    scrollContent: {
+        flexGrow: 1
+    },
     modalButton: {
         flex: 1,
-        paddingVertical: 12,
-        marginHorizontal: 5,
-        borderRadius: 5,
+        paddingVertical: '12@vs', // Scaled vertical padding
+        marginHorizontal: '5@s', // Scaled horizontal margin
+        borderRadius: '5@s', // Scaled border radius
         alignItems: "center",
     },
-    addButtonInModal: { backgroundColor: "#32CD32" },
-    modalButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-    cancelButton: { backgroundColor: "#FF6347" },
+    addButtonInModal: {
+        backgroundColor: "#32CD32"
+    },
+    modalButtonText: {
+        color: "white",
+        fontSize: '16@s', // Scaled font size
+        fontWeight: "bold"
+    },
+    cancelButton: {
+        backgroundColor: "#FF6347"
+    },
     input: {
         width: "100%",
-        height: 45,
+        height: '45@vs', // Scaled height
         borderWidth: 1,
         borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 15,
+        borderRadius: '5@s', // Scaled border radius
+        padding: '10@s', // Scaled padding
+        marginBottom: '15@vs', // Scaled vertical margin
     },
     fullscreenModalButtonRow: {
         flexDirection: "row",
@@ -244,16 +255,19 @@ const styles = StyleSheet.create({
     },
     previewImage: {
         width: "100%",
-        height: 150,
-        borderRadius: 5,
-        marginBottom: 20,
+        height: '150@vs', // Scaled height
+        borderRadius: '5@s', // Scaled border radius
+        marginBottom: '20@vs', // Scaled vertical margin
     },
     imageButton: {
         backgroundColor: "#007BFF",
-        paddingVertical: 12,
-        borderRadius: 5,
-        marginBottom: 20,
+        paddingVertical: '12@vs', // Scaled vertical padding
+        borderRadius: '5@s', // Scaled border radius
+        marginBottom: '20@vs', // Scaled vertical margin
         alignItems: "center",
     },
-    imageButtonText: { color: "white", fontSize: 16 },
-})
+    imageButtonText: {
+        color: "white",
+        fontSize: '16@s', // Scaled font size
+    },
+});

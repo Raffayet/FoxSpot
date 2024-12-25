@@ -4,6 +4,7 @@ import {FontAwesome} from "@expo/vector-icons";
 import React, {useRef} from "react";
 import {EventService} from "@/service/event.service";
 import { Event } from "@/model/event";
+import {ScaledSheet} from "react-native-size-matters";
 
 interface Props {
     selectedEvent: Event
@@ -113,59 +114,58 @@ export default function EventDetailsComponent(props: Props) {
     )
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
     popup: {
         position: "absolute",
         bottom: 0,
         left: 0,
         right: 0,
         backgroundColor: "white",
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        paddingHorizontal: 20,
-        paddingVertical: 20,
+        borderTopLeftRadius: '25@s',
+        borderTopRightRadius: '25@s',
+        paddingHorizontal: '20@s',
+        paddingVertical: '20@vs',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: '4@vs' },
         shadowOpacity: 0.25,
-        shadowRadius: 4,
+        shadowRadius: '4@s',
         elevation: 5,
     },
     popupImage: {
-        height: 200,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
+        height: '200@vs',
+        borderTopLeftRadius: '25@s',
+        borderTopRightRadius: '25@s',
         overflow: "hidden",
-        marginBottom: 10,
+        marginBottom: '10@vs',
     },
     popupButtons: {
         flexDirection: "row",
         justifyContent: "space-between",
-        paddingHorizontal: 20,
-        marginTop: 10,
+        paddingHorizontal: '20@s',
+        marginTop: '10@vs',
     },
     popupTitle: {
-        fontSize: 19,
+        fontSize: '19@s',
         fontWeight: "bold",
         color: "#ffffff",
-        marginTop: 12,
+        marginTop: '12@vs',
     },
     popupDescription: {
-        fontSize: 16,
+        fontSize: '16@s',
         color: "#ffffff",
-        marginBottom: 10,
+        marginBottom: '10@vs',
     },
     popupDetails: {
-        fontSize: 14,
+        fontSize: '14@s',
         color: "#ffffff",
-        marginBottom: 5,
+        marginBottom: '5@vs',
     },
     saveButton: {
         backgroundColor: "#32CD32",
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        borderRadius: '15@s',
+        paddingVertical: '10@vs',
+        paddingHorizontal: '20@s',
         alignSelf: "center",
-
     },
     saveButtonText: {
         color: "white",
@@ -173,9 +173,9 @@ const styles = StyleSheet.create({
     },
     deleteButton: {
         backgroundColor: "#FF6347",
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        borderRadius: '15@s',
+        paddingVertical: '10@vs',
+        paddingHorizontal: '20@s',
     },
     deleteButtonText: {
         color: "white",
@@ -183,9 +183,9 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         backgroundColor: "#007BFF",
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        borderRadius: '15@s',
+        paddingVertical: '10@vs',
+        paddingHorizontal: '20@s',
     },
     closeButtonText: {
         color: "white",
@@ -194,37 +194,39 @@ const styles = StyleSheet.create({
     tagsContainer: {
         flexDirection: "row",
         flexWrap: "wrap",
-        marginTop: 10,
+        marginTop: '10@vs',
         justifyContent: "center",
     },
     tag: {
         backgroundColor: "#007BFF",
-        borderRadius: 15,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        margin: 5,
+        borderRadius: '15@s',
+        paddingHorizontal: '10@s',
+        paddingVertical: '5@vs',
+        margin: '5@s',
         alignItems: "center",
     },
-    tagText: { color: "white", fontSize: 12 },
+    tagText: {
+        color: "white",
+        fontSize: '12@s'
+    },
     tagWithIcon: {
         flexDirection: "row",
         alignItems: "center",
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        marginHorizontal: 5,
+        borderRadius: '20@s',
+        paddingHorizontal: '12@s',
+        paddingVertical: '6@vs',
+        marginHorizontal: '5@s',
         backgroundColor: "#FF5733",
         elevation: 3,
         width: "35%",
     },
     tagIcon: {
-        marginRight: 8,
-
+        marginRight: '8@s',
     },
     overlay: {
         flex: 1,
         justifyContent: "flex-end",
-        padding: 15,
+        padding: '15@s',
         backgroundColor: "rgba(0, 0, 0, 0.4)",
     },
-})
+});

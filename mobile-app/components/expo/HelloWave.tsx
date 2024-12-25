@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/expo/ThemedText';
+import {ScaledSheet} from "react-native-size-matters";
 
 export function HelloWave() {
   const rotationAnimation = useSharedValue(0);
@@ -31,10 +32,10 @@ export function HelloWave() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
   text: {
-    fontSize: 28,
-    lineHeight: 32,
-    marginTop: -6,
+    fontSize: '28@s',
+    lineHeight: '32@s',
+    marginTop: '-6@vs',
   },
 });

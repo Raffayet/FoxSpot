@@ -4,6 +4,7 @@ import {Marker as MapMarker} from "react-native-maps";
 import {Animated, StyleSheet, View} from "react-native";
 import {FontAwesome} from "@expo/vector-icons";
 import React, {useEffect, useRef} from "react";
+import { ScaledSheet } from 'react-native-size-matters';
 
 export default function CustomMarker ({ event, onPress }: { event: Event; onPress: () => void }){
     const { icon, tags, color } = getEventTypeDetails(event.eventType as string);
@@ -14,7 +15,7 @@ export default function CustomMarker ({ event, onPress }: { event: Event; onPres
         const pulse = Animated.loop(
             Animated.sequence([
                 Animated.timing(scale, {
-                    toValue: 2.0,
+                    toValue: 1.5,
                     duration: 1000,
                     useNativeDriver: true,
                 }),
@@ -61,12 +62,12 @@ export default function CustomMarker ({ event, onPress }: { event: Event; onPres
     );
 };
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
     markerContainer: {
         marginLeft: "auto",
-        width: 30,
-        height: 30,
-        borderRadius: 15,
+        width: '20@s', // Scaled width
+        height: '20@s',
+        borderRadius: '3@s',
         justifyContent: "center",
         alignItems: "center",
         shadowColor: "#000",
@@ -78,25 +79,26 @@ const styles = StyleSheet.create({
     markerPointer: {
         width: 0,
         height: 0,
-        borderLeftWidth: 6,
-        borderRightWidth: 6,
-        borderTopWidth: 10,
+        borderLeftWidth: '6@s',
+        borderRightWidth: '6@s',
+        borderTopWidth: '10@s',
         borderLeftColor: "transparent",
         borderRightColor: "transparent",
         alignSelf: "center",
-        bottom:2,
-    },
-    markerWrapper: {
-        alignItems: "center",
-        justifyContent: "center",
+        bottom: '2@s',
     },
     pulse: {
         bottom: 0,
         position: "absolute",
-        width: 10,
-        height: 10,
-        borderRadius: 30,
+        width: '10@s',
+        height: '10@s',
+        borderRadius: '50@s',
         opacity: 0.5,
-        paddingBottom: 10
+        paddingBottom: '10@s',
+    },
+    markerWrapper: {
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
     },
 })

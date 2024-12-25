@@ -6,6 +6,7 @@ import ParallaxScrollView from '@/components/expo/ParallaxScrollView';
 import { ThemedText } from '@/components/expo/ThemedText';
 import { ThemedView } from '@/components/expo/ThemedView';
 import { IconSymbol } from '@/components/expo/IconSymbol';
+import {ScaledSheet} from "react-native-size-matters";
 
 export default function TabTwoScreen() {
   return (
@@ -95,15 +96,15 @@ export default function TabTwoScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
+const styles = ScaledSheet.create({
+    headerImage: {
+        color: '#808080',
+        bottom: '-90@vs', // Scaled vertical position
+        left: '-35@s',    // Scaled horizontal position
+        position: 'absolute',
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        gap: '8@s',       // Scaled gap
+    },
 });

@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/expo/ThemedView';
 import { IconSymbol } from '@/components/expo/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import {ScaledSheet} from "react-native-size-matters";
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,14 +33,14 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
   );
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
   heading: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: '6@s',
   },
   content: {
-    marginTop: 6,
-    marginLeft: 24,
+    marginTop: '6@vs',
+    marginLeft: '24@s',
   },
 });

@@ -1,6 +1,7 @@
 import { Text, type TextProps, StyleSheet } from 'react-native';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
+import {ScaledSheet} from "react-native-size-matters";
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -33,28 +34,28 @@ export function ThemedText({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
   default: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: '16@s', // Scaled font size
+    lineHeight: '24@s', // Scaled line height
   },
   defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: '16@s',
+    lineHeight: '24@s',
     fontWeight: '600',
   },
   title: {
-    fontSize: 32,
+    fontSize: '32@s',
     fontWeight: 'bold',
-    lineHeight: 32,
+    lineHeight: '32@s',
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: '20@s',
     fontWeight: 'bold',
   },
   link: {
-    lineHeight: 30,
-    fontSize: 16,
+    lineHeight: '30@s',
+    fontSize: '16@s',
     color: '#0a7ea4',
   },
 });

@@ -10,6 +10,7 @@ import Animated, {
 import { ThemedView } from '@/components/expo/ThemedView';
 import { useBottomTabOverflow } from '@/components/expo/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import {ScaledSheet} from "react-native-size-matters";
 
 const HEADER_HEIGHT = 250;
 
@@ -65,18 +66,18 @@ export default function ParallaxScrollView({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    height: HEADER_HEIGHT,
+    height: 'HEADER_HEIGHT@vs',
     overflow: 'hidden',
   },
   content: {
     flex: 1,
-    padding: 32,
-    gap: 16,
+    padding: '32@s',
+    gap: '16@s',
     overflow: 'hidden',
   },
 });

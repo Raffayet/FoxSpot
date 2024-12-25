@@ -5,6 +5,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Event } from "@/model/event";
 import {getEventTypeDetails} from "@/util/eventTypes";
 import CustomMarker from "@/components/custom_components/CustomMarker";
+import {ScaledSheet} from "react-native-size-matters";
 
 export interface Props {
     events: Event[];
@@ -41,7 +42,7 @@ export default function MapComponent({ events, onMarkerPress }: Props) {
     );
 }
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
     map: { flex: 1 },
     loaderContainer: {
         flex: 1,
