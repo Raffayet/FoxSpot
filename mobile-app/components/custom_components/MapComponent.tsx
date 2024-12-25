@@ -8,9 +8,10 @@ import { ScaledSheet } from "react-native-size-matters";
 export interface Props {
     events: Event[];
     onMarkerPress: (event: Event) => void;
+    mapRef: React.RefObject<MapView>;
 }
 
-export default function MapComponent({ events, onMarkerPress }: Props) {
+export default function MapComponent({ events, onMarkerPress, mapRef }: Props) {
     const currentHour = new Date().getHours();
     const isDayTime = currentHour >= 6 && currentHour < 18; // Day: 6 AM to 6 PM
 
@@ -24,6 +25,7 @@ export default function MapComponent({ events, onMarkerPress }: Props) {
 
     return (
         <MapView
+            ref={mapRef}
             style={styles.map}
             customMapStyle={isDayTime ? dayMapStyle : nightMapStyle}
             initialRegion={{

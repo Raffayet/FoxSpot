@@ -13,6 +13,7 @@ import AddEventComponent from "@/components/custom_components/AddEventComponent"
 import { Event } from "@/model/event";
 import {Marker} from "@/model/marker";
 import {ScaledSheet} from "react-native-size-matters";
+import MapView from "react-native-maps";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -20,6 +21,8 @@ export default function App() {
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const popupAnim = useRef(new Animated.Value(300)).current; // Slide from bottom
+
+    const mapRef = useRef<MapView>(null);
 
     useEffect(() => {
         EventService.getAllEvents()
@@ -44,7 +47,11 @@ export default function App() {
 
     return (
         <View style={styles.container}>
-            <MapComponent events={events} onMarkerPress={handleMarkerPress} />
+            <MapComponent
+                events={events}
+                onMarkerPress={handleMarkerPress}
+                mapRef={mapRef}
+            />
 
             <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <Text style={styles.addButtonText}>ADD EVENT</Text>
@@ -64,6 +71,7 @@ export default function App() {
                 modalVisible={modalVisible}
                 setEvents={setEvents}
                 setModalVisible={setModalVisible}
+                mapRef={mapRef}
             />
         </View>
     );

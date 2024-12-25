@@ -17,12 +17,14 @@ import {EventService} from "@/service/event.service";
 import { Event } from "@/model/event";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {ScaledSheet} from "react-native-size-matters";
+import MapView from "react-native-maps";
 
 
 interface Props {
     modalVisible: boolean
     setEvents: (update: Event[] | ((prevEvents: Event[]) => Event[])) => void;
     setModalVisible: (visible: boolean) => void
+    mapRef: React.RefObject<MapView>;
 }
 
 export default function AddEventComponent(props: Props) {
@@ -97,6 +99,14 @@ export default function AddEventComponent(props: Props) {
 
                 const savedEvent = await EventService.createEvent(eventToCreate);
                 props.setEvents((prevEvents: Event[]) => [...prevEvents, savedEvent]);
+
+                // Focus the map on the new event's location
+                props.mapRef?.current?.animateToRegion({
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                });
 
                 props.setModalVisible(false);
                 setNewEvent({ address: "", description: "", city: "", eventType: "", image: "", tags: [] });
