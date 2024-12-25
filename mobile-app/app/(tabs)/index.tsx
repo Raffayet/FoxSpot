@@ -13,13 +13,13 @@ import {
     Platform,
     ScrollView,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import {getEventTypeDetails} from "@/util/eventTypes";
+import EventDetailsComponent from "@/components/custom_components/EventDetailsComponent";
 
 export default function App() {
     const [events, setEvents] = useState<any[]>([]);
@@ -27,6 +27,7 @@ export default function App() {
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMarker, setSelectedMarker] = useState<any>(null);
     const popupAnim = useRef(new Animated.Value(300)).current; // Slide from bottom
+
     const [newMarker, setNewMarker] = useState({
         title: "",
         description: "",
@@ -41,6 +42,21 @@ export default function App() {
             .then((eventsData) => setEvents(eventsData))
             .catch((error) => console.error("Error fetching events:", error));
     }, []);
+
+    const handleMarkerPress = (event: any) => {
+        setSelectedMarker({
+            ...event,
+            tags: event.tags || [], // Ensure tags is always an array
+        });
+        setPopupVisible(true);
+        Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+    };
+
+    const handleClosePopup = () => {
+        Animated.timing(popupAnim, { toValue: 300, duration: 300, useNativeDriver: true }).start(() =>
+            setPopupVisible(false)
+        );
+    };
 
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -109,60 +125,6 @@ export default function App() {
         }
     };
 
-
-    const handleMarkerPress = (event: any) => {
-        setSelectedMarker({
-            ...event,
-            tags: event.tags || [], // Ensure tags is always an array
-        });
-        setPopupVisible(true);
-        Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
-    };
-
-
-    const handleClosePopup = () => {
-        Animated.timing(popupAnim, { toValue: 300, duration: 300, useNativeDriver: true }).start(() =>
-            setPopupVisible(false)
-        );
-    };
-
-    const handleDeleteEvent = async () => {
-        if (!selectedMarker) return;
-
-        try {
-            await EventService.deleteEvent(selectedMarker.id); // Assuming `id` is the unique identifier
-            setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedMarker.id));
-            alert("Event deleted successfully!");
-            setPopupVisible(false);
-        } catch (error) {
-            console.error("Error deleting event:", error);
-            alert("Failed to delete event. Please try again.");
-        }
-    };
-
-    const handleSaveChanges = async () => {
-        if (!selectedMarker) return;
-
-        try {
-            // Perform PUT request with the updated `selectedMarker`
-            await EventService.updateEvent(selectedMarker.id, selectedMarker);
-
-            // Update the state to reflect changes without creating new objects
-            setEvents((prevEvents) =>
-                prevEvents.map((event) =>
-                    event.id === selectedMarker.id ? { ...event, ...selectedMarker } : event
-                )
-            );
-
-            alert("Event updated successfully!");
-            setPopupVisible(false);
-
-        } catch (error) {
-            console.error("Error updating event:", error);
-            alert("Failed to update event. Please try again.");
-        }
-    };
-
     return (
         <View style={styles.container}>
             <MapComponent events={events} onMarkerPress={handleMarkerPress} />
@@ -172,65 +134,15 @@ export default function App() {
             </TouchableOpacity>
 
             {popupVisible && selectedMarker && (
-                <Animated.View style={[styles.popup, { transform: [{ translateY: popupAnim }] }]}>
-                    <ImageBackground source={{ uri: selectedMarker.image }} style={styles.popupImage}>
-                        <View style={styles.overlay}>
-                            <TextInput
-                                style={styles.popupTitle}
-                                value={selectedMarker.name}
-                                onChangeText={(text) => setSelectedMarker({ ...selectedMarker, name: text })}
-                                placeholder="Event Name"
-                                placeholderTextColor="rgba(255,255,255,0.7)"
-                            />
-                            <TextInput
-                                style={styles.popupDescription}
-                                value={selectedMarker.description}
-                                onChangeText={(text) => setSelectedMarker({ ...selectedMarker, description: text })}
-                                placeholder="Event Description"
-                                placeholderTextColor="rgba(255,255,255,0.7)"
-                                multiline
-                            />
-
-                            <TextInput
-                                style={styles.popupDetails}
-                                value={selectedMarker.city}
-                                onChangeText={(text) => setSelectedMarker({ ...selectedMarker, city: text })}
-                                placeholder="City"
-                                placeholderTextColor="rgba(255,255,255,0.7)"
-                            />
-                            {(() => {
-                                const { icon, tags, color } = getEventTypeDetails(selectedMarker.eventType);
-                                return (
-                                    <View style={[styles.tagWithIcon, { backgroundColor: color }]}>
-                                        <FontAwesome name={icon} size={16} color="#FFF" style={styles.tagIcon} />
-                                        <Text style={styles.tagText}>{(tags as string[])[0]}</Text>
-                                    </View>
-                                );
-                            })()}
-                        </View>
-                    </ImageBackground>
-                    <View style={styles.tagsContainer}>
-                        {Array.isArray(selectedMarker?.tags) &&
-                            selectedMarker.tags.map((tag: string, index: number) => (
-                                <View key={index} style={styles.tag}>
-                                    <Text style={styles.tagText}>{tag}</Text>
-                                </View>
-                            ))}
-                    </View>
-                    <View style={styles.popupButtons}>
-                        <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
-                            <Text style={styles.saveButtonText}>SAVE</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteEvent}>
-                            <Text style={styles.deleteButtonText}>DELETE</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.closeButton} onPress={handleClosePopup}>
-                            <Text style={styles.closeButtonText}>CLOSE</Text>
-                        </TouchableOpacity>
-                    </View>
-                </Animated.View>
+                <EventDetailsComponent
+                    selectedMarker={selectedMarker}
+                    popupAnim={popupAnim}
+                    setEvents={setEvents}
+                    setSelectedMarker={setSelectedMarker}
+                    setPopupVisible={setPopupVisible}
+                    handleClosePopup={handleClosePopup}
+                />
             )}
-
 
             <Modal visible={modalVisible} animationType="slide" transparent={true}>
                 <KeyboardAvoidingView
@@ -361,124 +273,11 @@ const styles = StyleSheet.create({
     cancelButton: { backgroundColor: "#FF6347" },
     addButtonInModal: { backgroundColor: "#32CD32" },
     modalButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-    popup: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "white",
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    popupImage: {
-        height: 200,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        overflow: "hidden",
-        marginBottom: 10,
-    },
-    overlay: {
-        flex: 1,
-        justifyContent: "flex-end",
-        padding: 15,
-        backgroundColor: "rgba(0, 0, 0, 0.4)",
-    },
-    popupTitle: {
-        fontSize: 19,
-        fontWeight: "bold",
-        color: "#ffffff",
-        marginTop: 12,
-    },
-    popupDescription: {
-        fontSize: 16,
-        color: "#ffffff",
-        marginBottom: 10,
-    },
-    popupDetails: {
-        fontSize: 14,
-        color: "#ffffff",
-        marginBottom: 5,
-    },
-    tagsContainer: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        marginTop: 10,
-        justifyContent: "center",
-    },
-    tag: {
-        backgroundColor: "#007BFF",
-        borderRadius: 15,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        margin: 5,
-        alignItems: "center",
-    },
-    tagText: { color: "white", fontSize: 12 },
-    popupButtons: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingHorizontal: 20,
-        marginTop: 10,
-    },
-    deleteButton: {
-        backgroundColor: "#FF6347",
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-    },
-    deleteButtonText: {
-        color: "white",
-        fontWeight: "bold",
-    },
-    closeButton: {
-        backgroundColor: "#007BFF",
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-    },
-    closeButtonText: {
-        color: "white",
-        fontWeight: "bold",
-    },
     tagContainer: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
         marginVertical: 10,
-    },
-    tagWithIcon: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        marginHorizontal: 5,
-        backgroundColor: "#FF5733",
-        elevation: 3,
-        width: "35%",
-    },
-    tagIcon: {
-        marginRight: 8,
-
-    },
-    saveButton: {
-        backgroundColor: "#32CD32",
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        alignSelf: "center",
-
-    },
-    saveButtonText: {
-        color: "white",
-        fontWeight: "bold",
     },
 });
 

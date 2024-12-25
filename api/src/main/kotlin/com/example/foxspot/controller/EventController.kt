@@ -21,6 +21,7 @@ class EventController(
         val savedEvent = eventService.saveEvent(event)
         return ResponseEntity.ok(savedEvent)
     }
+
     @DeleteMapping("/delete/{id}")
     fun deleteEvent(@PathVariable id: String): ResponseEntity<Void> {
         return try {
@@ -36,7 +37,4 @@ class EventController(
         val updated = eventService.updateEvent(id, updatedEvent)
         return ResponseEntity.ok(updated)
     }
-
-
-
 }

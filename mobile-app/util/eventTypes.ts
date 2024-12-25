@@ -5,7 +5,7 @@ export const getEventTypeDetails = (eventType: string) => {
         case "culture":
             return { icon: "university", tags: ["Art", "History", "Exhibition"], color: "#33A2FF" };
         case "meeting":
-            return { icon: "handshake-o", tag: ["Business", "Networking", "Discussion"], color: "#33FF57" };
+            return { icon: "handshake-o", tags: ["Business", "Networking", "Discussion"], color: "#33FF57" };
         case "work":
             return { icon: "briefcase", tags: ["Productivity", "Teamwork", "Focus"], color: "#FFC300" };
         case "dinner":
