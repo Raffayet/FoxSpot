@@ -218,7 +218,7 @@ const styles = ScaledSheet.create({
         marginHorizontal: '5@s',
         backgroundColor: "#FF5733",
         elevation: 3,
-        width: "35%",
+        marginRight: "auto"
     },
     tagIcon: {
         marginRight: '8@s',
