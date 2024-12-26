@@ -31,6 +31,9 @@ export default function CustomMarker ({ event, onPress }: { event: Event; onPres
         return () => pulse.stop(); // Cleanup animation on unmount
     }, [scale]);
 
+    // We don't show finished events for now
+    if(event.status === 'FINISHED') return null
+
     return (
         <MapMarker
             coordinate={{
