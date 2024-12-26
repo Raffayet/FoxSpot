@@ -15,7 +15,7 @@ export default function MapComponent({ events, onMarkerPress, mapRef }: Props) {
     const currentHour = new Date().getHours();
     const isDayTime = currentHour >= 6 && currentHour < 18; // Day: 6 AM to 6 PM
 
-    if (events.length === 0) {
+    if (events?.length === 0) {
         return (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#007BFF" />
@@ -35,7 +35,7 @@ export default function MapComponent({ events, onMarkerPress, mapRef }: Props) {
                 longitudeDelta: 0.01,
             }}
         >
-            {events.map((event) => (
+            {events?.map((event) => (
                 <CustomMarker
                     key={event.id}
                     event={event}

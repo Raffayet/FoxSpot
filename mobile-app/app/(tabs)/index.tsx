@@ -14,6 +14,7 @@ import { Event } from "@/model/event";
 import {Marker} from "@/model/marker";
 import {ScaledSheet} from "react-native-size-matters";
 import MapView from "react-native-maps";
+import { useQuery } from "@tanstack/react-query";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -24,11 +25,17 @@ export default function App() {
 
     const mapRef = useRef<MapView>(null);
 
+    const { refetch, isLoading, isError, data } = useQuery({
+        queryKey: ['events'], // Must be unique per query
+        queryFn: EventService.getAllEvents, // Ensure this is a working function
+        refetchInterval: 5000,
+    });
+
     useEffect(() => {
-        EventService.getAllEvents()
-            .then((eventsData) => setEvents(eventsData))
-            .catch((error) => console.error("Error fetching events:", error));
-    }, []);
+        if (data) {
+            setEvents(data as Event[]);
+        }
+    }, [data]);
 
     const handleMarkerPress = (event: Event) => {
         setSelectedEvent({
