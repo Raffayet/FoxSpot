@@ -62,13 +62,6 @@ export default function App() {
         // No need to manually filter here as the useEffect will handle it
     };
 
-    useEffect(() => {
-        if (data) {
-            console.log('New data received:', data); // Debug log
-            setEvents(data as Event[]);
-            setFilteredEvents(data as Event[]); // Initialize filtered events
-        }
-    }, [data]);
 
     const handleMarkerPress = (event) => {
         setSelectedEvent({
