@@ -15,8 +15,8 @@ data class Event(
     val image: String? = null,
     val location: Point? = null,
 
-    val startTime: Instant? = null,
-    val endTime: Instant? = null,
+    var startTime: Instant? = null,
+    var endTime: Instant? = null,
 
     // Indicate whether event should be shown on map
     var status: EventStatus? = EventStatus.SCHEDULED

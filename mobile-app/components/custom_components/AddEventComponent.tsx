@@ -160,7 +160,6 @@ export default function AddEventComponent(props: Props) {
                             isVisible={startDatePickerVisible}
                             mode="datetime"
                             onConfirm={(datetime) => {
-                                // Converting to UTC format before sending to API
                                 setNewEvent({ ...newEvent, startTime: datetime.toISOString() });
                                 setStartDatePickerVisible(false);
                             }}

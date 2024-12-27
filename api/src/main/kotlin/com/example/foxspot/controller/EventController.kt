@@ -15,12 +15,12 @@ class EventController(
 ) {
     @GetMapping("/all")
     fun getAll(): List<Event> {
-        return eventService.getAllEvents()
+        return eventService.getAll()
     }
 
     @PostMapping("/create")
     fun createEvent(@RequestBody event: Event): ResponseEntity<Event> {
-        val savedEvent = eventService.saveEvent(event)
+        val savedEvent = eventService.create(event)
         return ResponseEntity.ok(savedEvent)
     }
 

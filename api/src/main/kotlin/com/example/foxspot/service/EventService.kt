@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service
 @Service
 class EventService(
     @Autowired val eventRepository: EventRepository
-) {
-    fun getAllEvents(): List<Event> {
+): BaseService<Event> {
+    override fun getAll(): List<Event> {
         return eventRepository.findAll()
     }
 
-    fun saveEvent(event: Event): Event {
-        return eventRepository.save(event)
+    override fun create(entity: Event): Event {
+        return eventRepository.save(entity)
     }
 
     fun deleteEventById(id: String) {
