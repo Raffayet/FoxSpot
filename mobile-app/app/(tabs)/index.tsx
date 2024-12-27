@@ -10,18 +10,20 @@ import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
 import EventDetailsComponent from "@/components/custom_components/EventDetailsComponent";
 import AddEventComponent from "@/components/custom_components/AddEventComponent";
+import FilterButtonsComponent from "@/components/custom_components/FilterButtons"; // Import the filter buttons
 import { Event } from "@/model/event";
-import {Marker} from "@/model/marker";
-import {ScaledSheet} from "react-native-size-matters";
 import MapView from "react-native-maps";
 import { useQuery } from "@tanstack/react-query";
+import { ScaledSheet } from "react-native-size-matters";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
+    const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const popupAnim = useRef(new Animated.Value(300)).current; // Slide from bottom
+    const [activeFilter, setActiveFilter] = useState(null);
 
     const mapRef = useRef<MapView>(null);
 
@@ -29,15 +31,46 @@ export default function App() {
         queryKey: ['events'], // Must be unique per query
         queryFn: EventService.getAllEvents, // Ensure this is a working function
         refetchInterval: 5000,
+
     });
+
+    const applyFilter = (eventType, eventsList) => {
+        if (!eventType) {
+            return eventsList;
+        }
+        return eventsList.filter(event => event.eventType === eventType);
+    };
 
     useEffect(() => {
         if (data) {
             setEvents(data as Event[]);
+            setFilteredEvents(data as Event[]); // Initialize filtered events
         }
     }, [data]);
 
-    const handleMarkerPress = (event: Event) => {
+    useEffect(() => {
+        if (data) {
+            setEvents(data as Event[]);
+            // Apply current filter to new data
+            const filteredData = applyFilter(activeFilter, data as Event[]);
+            setFilteredEvents(filteredData);
+        }
+    }, [data, activeFilter]);
+
+    const handleFilterSelect = (eventType) => {
+        setActiveFilter(eventType);
+        // No need to manually filter here as the useEffect will handle it
+    };
+
+    useEffect(() => {
+        if (data) {
+            console.log('New data received:', data); // Debug log
+            setEvents(data as Event[]);
+            setFilteredEvents(data as Event[]); // Initialize filtered events
+        }
+    }, [data]);
+
+    const handleMarkerPress = (event) => {
         setSelectedEvent({
             ...event,
             tags: event.tags || [],
@@ -55,9 +88,14 @@ export default function App() {
     return (
         <View style={styles.container}>
             <MapComponent
-                events={events}
+                events={filteredEvents}
                 onMarkerPress={handleMarkerPress}
                 mapRef={mapRef}
+            />
+
+            <FilterButtonsComponent
+                onFilterSelect={handleFilterSelect}
+                activeFilter={activeFilter}
             />
 
             <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
@@ -84,7 +122,6 @@ export default function App() {
     );
 }
 
-
 const styles = ScaledSheet.create({
     container: {
         flex: 1
@@ -103,11 +140,4 @@ const styles = ScaledSheet.create({
         fontSize: '16@s',
         fontWeight: "bold"
     },
-    tagContainer: {
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        marginVertical: '10@vs',
-    },
 });
-
