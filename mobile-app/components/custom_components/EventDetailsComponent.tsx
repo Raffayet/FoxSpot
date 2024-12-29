@@ -132,17 +132,18 @@ const styles = ScaledSheet.create({
         elevation: 5,
     },
     popupImage: {
-        height: '200@vs',
+        height: '250@vs',
         borderTopLeftRadius: '25@s',
         borderTopRightRadius: '25@s',
         overflow: "hidden",
-        marginBottom: '10@vs',
+        marginBottom: '100@vs',
     },
     popupButtons: {
         flexDirection: "row",
         justifyContent: "space-between",
         paddingHorizontal: '20@s',
         marginTop: '10@vs',
+        bottom: '90@vs',
     },
     popupTitle: {
         fontSize: '19@s',

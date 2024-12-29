@@ -120,7 +120,7 @@ const styles = ScaledSheet.create({
     buttonContainer: {
         flexDirection: "column",
         alignItems: "center",
-        marginBottom: '50@s',
+        marginBottom: '100@s',
         width: "100%",
     },
     googleButton: {

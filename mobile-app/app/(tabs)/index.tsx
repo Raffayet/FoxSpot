@@ -10,7 +10,7 @@ import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
 import EventDetailsComponent from "@/components/custom_components/EventDetailsComponent";
 import AddEventComponent from "@/components/custom_components/AddEventComponent";
-import FilterButtonsComponent from "@/components/custom_components/FilterButtons"; // Import the filter buttons
+import FilterButtonsComponent from "@/components/custom_components/FilterButtons";
 import { Event } from "@/model/event";
 import MapView from "react-native-maps";
 import { useQuery } from "@tanstack/react-query";
@@ -22,48 +22,44 @@ export default function App() {
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-    const popupAnim = useRef(new Animated.Value(300)).current; // Slide from bottom
+    const popupAnim = useRef(new Animated.Value(300)).current;
     const [activeFilter, setActiveFilter] = useState(null);
 
     const mapRef = useRef<MapView>(null);
 
     const { refetch, isLoading, isError, data } = useQuery({
-        queryKey: ['events'], // Must be unique per query
-        queryFn: EventService.getAllEvents, // Ensure this is a working function
+        queryKey: ['events'],
+        queryFn: EventService.getAllEvents,
         refetchInterval: 5000,
-
     });
 
-    const applyFilter = (eventType, eventsList) => {
+    const applyFilter = (eventType: null, eventsList: any[]) => {
         if (!eventType) {
             return eventsList;
         }
-        return eventsList.filter(event => event.eventType === eventType);
+        return eventsList.filter((event: { eventType: any; }) => event.eventType === eventType);
     };
 
     useEffect(() => {
         if (data) {
             setEvents(data as Event[]);
-            setFilteredEvents(data as Event[]); // Initialize filtered events
+            setFilteredEvents(data as Event[]);
         }
     }, [data]);
 
     useEffect(() => {
         if (data) {
             setEvents(data as Event[]);
-            // Apply current filter to new data
             const filteredData = applyFilter(activeFilter, data as Event[]);
             setFilteredEvents(filteredData);
         }
     }, [data, activeFilter]);
 
-    const handleFilterSelect = (eventType) => {
+    const handleFilterSelect = (eventType: React.SetStateAction<null>) => {
         setActiveFilter(eventType);
-        // No need to manually filter here as the useEffect will handle it
     };
 
-
-    const handleMarkerPress = (event) => {
+    const handleMarkerPress = (event: React.SetStateAction<Event | null>) => {
         setSelectedEvent({
             ...event,
             tags: event.tags || [],
@@ -91,46 +87,68 @@ export default function App() {
                 activeFilter={activeFilter}
             />
 
-            <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-                <Text style={styles.addButtonText}>ADD EVENT</Text>
-            </TouchableOpacity>
+            {/* Add Event Button */}
+            {!popupVisible && (
+                <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+                    <Text style={styles.addButtonText}>ADD EVENT</Text>
+                </TouchableOpacity>
+            )}
 
-            {popupVisible && selectedEvent && (
-                <EventDetailsComponent
-                    selectedEvent={selectedEvent}
-                    popupAnim={popupAnim}
+            {/* Add Event Modal */}
+            {!popupVisible && (
+                <AddEventComponent
+                    modalVisible={modalVisible}
                     setEvents={setEvents}
-                    setSelectedEvent={setSelectedEvent}
-                    setPopupVisible={setPopupVisible}
-                    handleClosePopup={handleClosePopup}
+                    setModalVisible={setModalVisible}
+                    mapRef={mapRef}
                 />
             )}
-            <AddEventComponent
-                modalVisible={modalVisible}
-                setEvents={setEvents}
-                setModalVisible={setModalVisible}
-                mapRef={mapRef}
-            />
+
+            {/* Event Details Popup */}
+            {popupVisible && selectedEvent && (
+                <View style={styles.eventDetailsOverlay}>
+                    <EventDetailsComponent
+                        selectedEvent={selectedEvent}
+                        popupAnim={popupAnim}
+                        setEvents={setEvents}
+                        setSelectedEvent={setSelectedEvent}
+                        setPopupVisible={setPopupVisible}
+                        handleClosePopup={handleClosePopup}
+                    />
+                </View>
+            )}
         </View>
     );
 }
 
 const styles = ScaledSheet.create({
     container: {
-        flex: 1
+        flex: 1,
+        position: "relative",
+
     },
     addButton: {
         position: "absolute",
-        bottom: '20@vs',
+        bottom: '95@vs',
         backgroundColor: "#007BFF",
         padding: '15@s',
         borderRadius: '50@s',
         elevation: 5,
-        alignSelf: "center"
+        alignSelf: "center",
+        zIndex: 10, // Ensure it fully overlays everything else
     },
     addButtonText: {
         color: "white",
         fontSize: '16@s',
-        fontWeight: "bold"
+        fontWeight: "bold",
+    },
+    eventDetailsOverlay: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+        zIndex: 10, // Ensure it fully overlays everything else
     },
 });
