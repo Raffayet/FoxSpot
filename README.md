@@ -6,3 +6,5 @@ username: foxspot
 password: foxspot123
 
 #Spring deployment on AWS Lambda: https://youtu.be/A1rYiHTy9Lg
+
+#Trello board: https://trello.com/b/5N0Qtz7a/foxspot
