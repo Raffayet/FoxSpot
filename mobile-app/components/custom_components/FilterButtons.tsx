@@ -1,28 +1,19 @@
 // FilterButtonsComponent.js
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import React from "react";
+import { View, TouchableOpacity, Text, StyleSheet, ScrollView } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 import { getEventTypeDetails } from "@/util/eventTypes";
 
 const FilterButtonsComponent = ({ onFilterSelect, activeFilter }) => {
-    // Updated to match the exact eventType values from your data
-    const eventTypes = [
-        "Party",
-        "Culture",
-        "Meeting",
-        "Work",
-        "Dinner",
-        "Exercise"
-    ];
-
-    const renderIcon = (iconName) => (
-        <Text>
-            <FontAwesome name={iconName} size={16} color="#FFF" />
-        </Text>
-    );
+    // Event Types
+    const eventTypes = ["Party", "Culture", "Meeting", "Work", "Dinner", "Exercise"];
 
     return (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.container}>
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.container}
+        >
             {eventTypes.map((eventType) => {
                 const { icon, color } = getEventTypeDetails(eventType.toLowerCase());
                 return (
@@ -31,24 +22,25 @@ const FilterButtonsComponent = ({ onFilterSelect, activeFilter }) => {
                         style={[
                             styles.button,
                             { backgroundColor: color },
-                            activeFilter === eventType && styles.activeButton
+                            activeFilter === eventType && styles.activeButton,
                         ]}
                         onPress={() => onFilterSelect(eventType)}
                     >
-                        {renderIcon(icon)}
+                        <FontAwesome name={icon} size={18} color="#FFF" />
                         <Text style={styles.buttonText}>{eventType}</Text>
                     </TouchableOpacity>
                 );
             })}
+            {/* "All" Filter Button */}
             <TouchableOpacity
                 style={[
                     styles.button,
-                    { backgroundColor: '#6c757d' },
-                    activeFilter === null && styles.activeButton
+                    { backgroundColor: "#6c757d" },
+                    activeFilter === null && styles.activeButton,
                 ]}
                 onPress={() => onFilterSelect(null)}
             >
-                {renderIcon("filter")}
+                <FontAwesome name="sliders" size={18} color="#FFF" />
                 <Text style={styles.buttonText}>All</Text>
             </TouchableOpacity>
         </ScrollView>
@@ -57,11 +49,11 @@ const FilterButtonsComponent = ({ onFilterSelect, activeFilter }) => {
 
 const styles = StyleSheet.create({
     container: {
-        position: 'absolute',
+        position: "absolute",
         top: 100,
         left: 0,
         right: 0,
-        flexDirection: 'row',
+        flexDirection: "row",
         paddingVertical: 10,
         zIndex: 1,
     },
@@ -70,16 +62,23 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         borderRadius: 20,
         marginHorizontal: 5,
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 5, // Android shadow
     },
     activeButton: {
         borderWidth: 2,
-        borderColor: '#FFF',
+        borderColor: "#FFF",
     },
     buttonText: {
-        color: '#FFF',
+        color: "#FFF",
         marginLeft: 10,
+        fontSize: 14,
+        fontWeight: "bold",
     },
 });
 
