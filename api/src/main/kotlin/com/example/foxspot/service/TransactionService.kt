@@ -10,6 +10,8 @@ import java.time.Duration
 
 @Service
 class TransactionService(
+    @Autowired val invoiceService: InvoiceService,
+
     @Autowired val transactionRepository: TransactionRepository,
     @Autowired val pricingRepository: PricingRepository
 ): BaseService<Transaction> {
@@ -19,6 +21,12 @@ class TransactionService(
     }
 
     override fun create(entity: Transaction): Transaction {
+        val transactionAmount = entity.amount
+        val invoice = invoiceService.getAll().first()
+        if (transactionAmount != null) {
+            invoice.totalAmount += transactionAmount
+        }
+        invoiceService.update(invoice)
         return transactionRepository.save(entity)
     }
 
@@ -33,13 +41,15 @@ class TransactionService(
         return transaction
     }
 
-    fun calculateTransactionAmount(event: Event): Double? {
+    fun calculateTransactionAmount(event: Event): Double {
         val pricing = pricingRepository.findFirst()
         val pricePerHour = pricing?.pricePerHour
 
         // Calculating minutes for now for testing purposes - in real situation metric would be price / hour
         val minutesOnMap = Duration.between(event.startTime, event.endTime).toMinutes()
-        val amount = pricePerHour?.times(minutesOnMap)
-        return amount
+
+        // Calculate the amount and return the negative value or 0.0 if null
+        val amount = pricePerHour?.times(minutesOnMap) ?: 0.0
+        return -amount
     }
 }

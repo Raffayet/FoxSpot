@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import {TransactionService} from "@/service/transaction.service";
 import {Transaction} from "@/model/transaction";
 import {Event} from "@/model/event";
+import {InvoiceService} from "@/service/invoice.service";
 
 // const transactions = [
 //     { id: '1', title: 'Subscription', date: '2024-12-01', amount: '€ 10.99' },
@@ -15,19 +16,31 @@ import {Event} from "@/model/event";
 // ];
 
 export default function BillingPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>()
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [invoiceTotal, setInvoiceTotal] = useState<number | undefined>(undefined);
 
-    const { refetch, isLoading, isError, data } = useQuery({
+    // Fetch transactions
+    const { refetch: refetchTransactions, isLoading: isLoadingTransactions, isError: isErrorTransactions, data: transactionData } = useQuery<Transaction[]>({
         queryKey: ['transactions'],
         queryFn: TransactionService.getAllTransactions,
         refetchInterval: 5000,
     });
 
+    // Fetch current invoice total
+    const { refetch: refetchInvoice, isLoading: isLoadingInvoice, isError: isErrorInvoice, data: invoiceData } = useQuery<number>({
+        queryKey: ['current-invoice'],
+        queryFn: InvoiceService.getCurrentInvoiceTotal,
+        refetchInterval: 5000,
+    });
+
     useEffect(() => {
-        if (data) {
-            setTransactions(data as Transaction[]);
+        if (transactionData) {
+            setTransactions(transactionData);
         }
-    }, [data]);
+        if (invoiceData !== undefined) {
+            setInvoiceTotal(invoiceData);
+        }
+    }, [transactionData, invoiceData]);
 
     function formatEventTime(startTime: string, endTime: string): string {
         const start = new Date(startTime);
@@ -70,9 +83,16 @@ export default function BillingPage() {
             ) : (
                 <Text style={styles.noTransactions}>No transactions</Text>
             )}
+            <View style={styles.balanceContainer}>
+                <Text style={styles.balanceText}>Balance</Text>
+                { invoiceData && (invoiceData as number) < 0 ?
+                    (<Text style={styles.balanceAmountMinus}>{invoiceData} €</Text>)
+                    :
+                    (<Text style={styles.balanceAmountPlus}>{invoiceData} €</Text>)
+                }
+            </View>
         </View>
     );
-
 }
 
 const styles = ScaledSheet.create({
@@ -82,6 +102,11 @@ const styles = ScaledSheet.create({
         paddingHorizontal: '20@s',
         paddingTop: '20@s',
     },
+    balanceContainer: {
+        backgroundColor: '#1e1e2f', // Dark background for a sleek look
+        paddingHorizontal: '20@s',
+        marginBottom: '100@s'
+    },
     title: {
         fontSize: '24@s',
         fontFamily: 'Poppins-Bold, sans-serif',
@@ -90,6 +115,30 @@ const styles = ScaledSheet.create({
         marginTop: '20@s',
         marginBottom: '20@s',
         fontWeight: 'bold',
+    },
+    balanceText: {
+        fontSize: '24@s',
+        fontFamily: 'Poppins-Bold, sans-serif',
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        padding: '5@s'
+    },
+    balanceAmountMinus: {
+        fontSize: '24@s',
+        fontFamily: 'Poppins-Bold, sans-serif',
+        color: '#b11111',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        padding: '5@s'
+    },
+    balanceAmountPlus: {
+        fontSize: '24@s',
+        fontFamily: 'Poppins-Bold, sans-serif',
+        color: '#4caf50',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        padding: '5@s'
     },
     listContainer: {
         paddingBottom: '20@s',
@@ -117,7 +166,7 @@ const styles = ScaledSheet.create({
     },
     transactionAmount: {
         fontSize: '16@s',
-        color: '#4caf50', // Green for positive transactions
+        color: '#b11111', // Green for positive transactions
         fontFamily: 'Poppins-Bold, sans-serif',
     },
     transactionDate: {
@@ -133,6 +182,14 @@ const styles = ScaledSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: '250@s'
     },
+    totalSum: {
+        fontSize: '24@s',
+        fontFamily: 'Poppins-Bold, sans-serif',
+        color: '#fff',
+        textAlign: 'center',
+        marginTop: '20@s',
+        marginBottom: '100@s',
+        fontWeight: 'bold',
+    }
 });

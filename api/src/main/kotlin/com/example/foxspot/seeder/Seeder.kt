@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 class Seeder(
     @Autowired val eventSeeder: EventSeeder,
     @Autowired val pricingSeeder: PricingSeeder,
+    @Autowired val invoiceSeeder: InvoiceSeeder,
     private val mongoTemplate: MongoTemplate
 ) {
 
@@ -20,7 +21,15 @@ class Seeder(
 
     fun createInitialData() {
         eventSeeder.createSeedData()
+        println("Events created!")
+
         pricingSeeder.createSeedData()
+        println("Pricing created!")
+
+        invoiceSeeder.createSeedData()
+        println("Invoices created!")
+
+        println("All demo deata created!")
     }
 
     // Every time we run the app we must first delete the data from the previous runtime
