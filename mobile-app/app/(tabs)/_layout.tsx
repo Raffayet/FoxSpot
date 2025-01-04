@@ -1,130 +1,72 @@
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text, Animated } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Tabs, useRouter } from "expo-router";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useSegments } from "expo-router";
 
-// Create a Query Client instance
 const queryClient = new QueryClient();
 
 export default function TabLayout() {
-    const colorScheme = useColorScheme();
     const router = useRouter();
-    const segments = useSegments();
-    const [showEventDetails, setShowEventDetails] = useState(false);
+    const [tabAnimation] = useState(new Animated.Value(0));
+    const [activeIndex, setActiveIndex] = useState(0);
 
-    const currentPath = segments[1];
+    const handleTabPress = (index, route) => {
+        setActiveIndex(index);
 
-    const handleEventClick = () => {
-        router.push("/"); // Navigate to /
-        setShowEventDetails(false);
+        Animated.sequence([
+            Animated.timing(tabAnimation, {
+                toValue: 1,
+                duration: 400,
+                useNativeDriver: true,
+            }),
+            Animated.timing(tabAnimation, {
+                toValue: 0,
+                duration: 400,
+                useNativeDriver: true,
+            }),
+        ]).start();
+
+        router.push(route);
     };
+
+    const getTabBubbleStyle = (index) => ({
+        transform: [
+            { scale: activeIndex === index ? 1.2 : 1 },
+            { translateY: activeIndex === index ? -10 : 0 },
+        ],
+        opacity: activeIndex === index ? 1 : 0.5,
+    });
 
     return (
         <QueryClientProvider client={queryClient}>
             <View style={styles.container}>
-                {/* Dynamic Tab Rendering */}
-                <Tabs
-                    screenOptions={{
-                        tabBarStyle: {
-                            display: "none", // Hide default tab bar
-                        },
-                        headerShown: false,
-                    }}
-                />
-
-                {/* Custom Navigation Bar */}
+                <Tabs screenOptions={{ tabBarStyle: { display: "none" }, headerShown: false }} />
                 <View style={styles.customNavBar}>
-                    {/* Home Tab */}
-                    <TouchableOpacity
-                        style={styles.navItem}
-                        onPress={() => router.push("/landing")}
-                    >
-                        <FontAwesome
-                            name="home"
-                            size={currentPath === "landing" ? 30 : 25}
-                            color={currentPath === "landing" ? "#ffffff" : "#ccc"}
-                        />
-                        <Text
-                            style={[
-                                styles.navText,
-                                { color: currentPath === "landing" ? "#ffffff" : "#ccc" },
-                            ]}
+                    {[
+                        { route: "/landing", icon: "home", label: "Home" },
+                        { route: "/", icon: "map-marker", label: "Map" },
+                        { route: "/explore", icon: "paper-plane", label: "Explore" },
+                        { route: "/billing", icon: "money", label: "Billing" },
+                    ].map((tab, index) => (
+                        <TouchableOpacity
+                            key={tab.label}
+                            style={styles.navItem}
+                            onPress={() => handleTabPress(index, tab.route)}
                         >
-                            Home
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* Map Tab */}
-                    <TouchableOpacity
-                        style={styles.navItem}
-                        onPress={handleEventClick}
-                    >
-                        <FontAwesome
-                            name="map-marker"
-                            size={currentPath === undefined ? 30 : 25}
-                            color={currentPath === undefined ? "#ffffff" : "#ccc"}
-                        />
-                        <Text
-                            style={[
-                                styles.navText,
-                                { color: currentPath === "/" ? "#ffffff" : "#ccc" },
-                            ]}
-                        >
-                            Map
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* Central Floating Button */}
-                    {/*<TouchableOpacity*/}
-                    {/*    style={styles.centralButton}*/}
-                    {/*    onPress={() => router.push("/add-event")}*/}
-                    {/*>*/}
-                    {/*    <FontAwesome name="plus" size={28} color="#fff" />*/}
-                    {/*</TouchableOpacity>*/}
-
-                    {/* Explore Tab */}
-                    <TouchableOpacity
-                        style={styles.navItem}
-                        onPress={() => router.push("/explore")}
-                    >
-                        <FontAwesome
-                            name="paper-plane"
-                            size={currentPath === "explore" ? 30 : 25}
-                            color={currentPath === "explore" ? "#ffffff" : "#ccc"}
-                        />
-                        <Text
-                            style={[
-                                styles.navText,
-                                { color: currentPath === "explore" ? "#ffffff" : "#ccc" },
-                            ]}
-                        >
-                            Explore
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* Billing Tab */}
-                    <TouchableOpacity
-                        style={styles.navItem}
-                        onPress={() => router.push("/billing")}
-                    >
-                        <FontAwesome
-                            name="money"
-                            size={currentPath === "billing" ? 30 : 25}
-                            color={currentPath === "billing" ? "#ffffff" : "#ccc"}
-                        />
-                        <Text
-                            style={[
-                                styles.navText,
-                                { color: currentPath === "billing" ? "#ffffff" : "#ccc" },
-                            ]}
-                        >
-                            Billing
-                        </Text>
-                    </TouchableOpacity>
+                            <Animated.View style={[styles.bubble, getTabBubbleStyle(index)]}>
+                                <FontAwesome name={tab.icon} size={25} color="#ffffff" />
+                            </Animated.View>
+                            <Text
+                                style={[
+                                    styles.navText,
+                                    activeIndex === index && styles.activeText,
+                                ]}
+                            >
+                                {tab.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
             </View>
         </QueryClientProvider>
@@ -144,14 +86,14 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-around",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
+        backgroundColor: "rgba(30, 30, 30, 0.9)",
         borderRadius: 40,
-        height: 70,
+        height: 80,
         paddingHorizontal: 10,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: -4 },
         shadowOpacity: 0.3,
-        shadowRadius: 5,
+        shadowRadius: 6,
         elevation: 10,
     },
     navItem: {
@@ -160,22 +102,27 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     navText: {
-        marginTop: 3,
+        marginTop: 5,
         fontSize: 12,
+        color: "#ccc",
         fontWeight: "500",
     },
-    centralButton: {
-        backgroundColor: Colors["light"].tint,
-        width: 65,
-        height: 65,
-        borderRadius: 32.5,
+    activeText: {
+        fontSize: 14,
+        color: "#ffffff",
+        fontWeight: "700",
+    },
+    bubble: {
+        backgroundColor: "#575757",
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: -30,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
+        shadowColor: "#007BFF",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
         elevation: 10,
     },
 });

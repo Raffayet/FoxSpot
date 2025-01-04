@@ -181,7 +181,7 @@ const styles = ScaledSheet.create({
     },
     addButton: {
         position: "absolute",
-        bottom: "95@vs",
+        bottom: "105@vs",
         backgroundColor: "#007BFF",
         padding: "15@s",
         borderRadius: "50@s",
