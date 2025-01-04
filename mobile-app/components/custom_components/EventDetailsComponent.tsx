@@ -8,7 +8,7 @@ import {ScaledSheet} from "react-native-size-matters";
 
 interface Props {
     selectedEvent: Event
-    popupAnim: Animated.Value
+    popupAnim: Animated.Value;
     setEvents: (update: Event[] | ((prevEvents: Event[]) => Event[])) => void;
     setPopupVisible: (visible: boolean) => void
     setSelectedEvent: (event: Event) => void
@@ -52,7 +52,25 @@ export default function EventDetailsComponent(props: Props) {
             alert("Failed to update event. Please try again.");
         }
     };
+    const openPopup = () => {
+        Animated.timing(props.popupAnim, {
+            toValue: 0, // Fully visible
+            duration: 500,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+        }).start();
+    };
 
+    const closePopup = () => {
+        Animated.timing(props.popupAnim, {
+            toValue: 300, // Fully hidden
+            duration: 500,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+        }).start(() => {
+            props.handleClosePopup();
+        });
+    };
     return(
         <Animated.View style={[styles.popup, { transform: [{ translateY: props.popupAnim }] }]}>
             <ImageBackground source={{ uri: props.selectedEvent.image }} style={styles.popupImage}>
@@ -159,7 +177,7 @@ const styles = ScaledSheet.create({
     popupDetails: {
         fontSize: '14@s',
         color: "#ffffff",
-        marginBottom: '5@vs',
+        marginBottom: '35@vs',
     },
     saveButton: {
         backgroundColor: "#32CD32",
@@ -197,6 +215,7 @@ const styles = ScaledSheet.create({
         flexWrap: "wrap",
         marginTop: '10@vs',
         justifyContent: "center",
+
     },
     tag: {
         backgroundColor: "#007BFF",
@@ -205,6 +224,7 @@ const styles = ScaledSheet.create({
         paddingVertical: '5@vs',
         margin: '5@s',
         alignItems: "center",
+
     },
     tagText: {
         color: "white",
@@ -219,7 +239,8 @@ const styles = ScaledSheet.create({
         marginHorizontal: '5@s',
         backgroundColor: "#FF5733",
         elevation: 3,
-        marginRight: "auto"
+        marginRight: "auto",
+        bottom : '20@vs',
     },
     tagIcon: {
         marginRight: '8@s',

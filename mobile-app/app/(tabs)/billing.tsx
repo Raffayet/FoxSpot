@@ -1,138 +1,238 @@
-import React, {useEffect, useState} from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { ScaledSheet } from 'react-native-size-matters';
-import {EventService} from "@/service/event.service";
-import { useQuery } from "@tanstack/react-query";
-import {TransactionService} from "@/service/transaction.service";
-import {Transaction} from "@/model/transaction";
-import {Event} from "@/model/event";
+import React from "react";
+import MapView, { Marker as MapMarker, MapViewProps } from "react-native-maps";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { Event } from "@/model/event";
+import CustomMarker from "@/components/custom_components/CustomMarker";
+import { ScaledSheet } from "react-native-size-matters";
 
-// const transactions = [
-//     { id: '1', title: 'Subscription', date: '2024-12-01', amount: '€ 10.99' },
-//     { id: '2', title: 'Premium Feature', date: '2024-12-05', amount: '€ 4.99' },
-//     { id: '3', title: 'One-Time Payment', date: '2024-12-10', amount: '€ 20.00' },
-//     { id: '4', title: 'Renewal', date: '2024-12-15', amount: '€ 15.00' },
-// ];
+export interface Props {
+    events: Event[];
+    onMarkerPress: (event: Event) => void;
+    mapRef: React.RefObject<MapView>;
+}
 
-export default function BillingPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>()
+export default function MapComponent({ events, onMarkerPress, mapRef }: Props) {
+    const currentHour = new Date().getHours();
+    const isDayTime = currentHour >= 6 && currentHour < 18; // Day: 6 AM to 6 PM
 
-    const { refetch, isLoading, isError, data } = useQuery({
-        queryKey: ['transactions'],
-        queryFn: TransactionService.getAllTransactions,
-        refetchInterval: 5000,
-    });
-
-    useEffect(() => {
-        if (data) {
-            setTransactions(data as Transaction[]);
-        }
-    }, [data]);
-
-    function formatEventTime(startTime: string, endTime: string): string {
-        const start = new Date(startTime);
-        const end = new Date(endTime);
-
-        const formatter = new Intl.DateTimeFormat('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-
-        const formattedStartDate = formatter.format(start).replace(',', '');
-        const formattedEndTime = end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-        return `${formattedStartDate} - ${formattedEndTime}`;
+    if (events?.length === 0) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#007BFF" />
+            </View>
+        );
     }
 
-    const renderTransaction = ({ item }) => (
-        <View style={styles.transactionItem}>
-            <View style={styles.row}>
-                <Text style={styles.transactionTitle}>{item.eventName}</Text>
-                <Text style={styles.transactionAmount}>{item.amount} €</Text>
-            </View>
-            <Text style={styles.transactionDate}>{formatEventTime(item.eventStartTime, item.eventEndTime)}</Text>
-        </View>
-    );
-
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Your Transactions</Text>
-            {transactions && transactions.length > 0 ? (
-                <FlatList
-                    data={transactions}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderTransaction}
-                    contentContainerStyle={styles.listContainer}
+        <MapView
+            ref={mapRef}
+            style={styles.map}
+            customMapStyle={isDayTime ? dayMapStyle : nightMapStyle}
+            initialRegion={{
+                latitude: 45.2671,
+                longitude: 19.8335,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            }}
+        >
+            {events?.map((event) => (
+                <CustomMarker
+                    key={event.id}
+                    event={event}
+                    onPress={() => onMarkerPress(event)}
                 />
-            ) : (
-                <Text style={styles.noTransactions}>No transactions</Text>
-            )}
-        </View>
+            ))}
+        </MapView>
     );
-
 }
 
 const styles = ScaledSheet.create({
-    container: {
+    map: { flex: 1 },
+    loaderContainer: {
         flex: 1,
-        backgroundColor: '#1e1e2f', // Dark background for a sleek look
-        paddingHorizontal: '20@s',
-        paddingTop: '20@s',
-    },
-    title: {
-        fontSize: '24@s',
-        fontFamily: 'Poppins-Bold, sans-serif',
-        color: '#fff',
-        textAlign: 'center',
-        marginTop: '20@s',
-        marginBottom: '20@s',
-        fontWeight: 'bold',
-    },
-    listContainer: {
-        paddingBottom: '20@s',
-    },
-    transactionItem: {
-        backgroundColor: '#2a2a40',
-        borderRadius: '10@s',
-        padding: '15@s',
-        marginBottom: '10@s',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: '5@s',
-        shadowOffset: { width: 0, height: '2@s' },
-        elevation: 3, // For Android shadow
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    transactionTitle: {
-        fontSize: '16@s',
-        color: '#fff',
-        fontFamily: 'Poppins-Medium, sans-serif',
-    },
-    transactionAmount: {
-        fontSize: '16@s',
-        color: '#4caf50', // Green for positive transactions
-        fontFamily: 'Poppins-Bold, sans-serif',
-    },
-    transactionDate: {
-        fontSize: '12@s',
-        color: '#a1a1b3',
-        marginTop: '5@s',
-        fontFamily: 'Poppins-Regular, sans-serif',
-    },
-    noTransactions: {
-        fontSize: '16@s',
-        color: '#888',
-        textAlign: 'center',
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '250@s'
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#F5FCFF",
     },
 });
+
+// Example map style JSON (replace with your own from Google Maps Styling Wizard)
+const dayMapStyle = [
+    {
+        "elementType": "geometry",
+        "stylers": [
+            { "color": "#ebe3cd" }
+        ]
+    },
+    {
+        "elementType": "labels.text.fill",
+        "stylers": [
+            { "color": "#523735" }
+        ]
+    },
+    {
+        "elementType": "labels.text.stroke",
+        "stylers": [
+            { "color": "#f5f1e6" }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry",
+        "stylers": [
+            { "color": "#dfd2ae" }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [
+            { "color": "#f5f5f5" }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [
+            { "color": "#c9c0b1" }
+        ]
+    }
+];
+
+const nightMapStyle = [
+    {
+        "featureType": "all",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#ffffff"
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.text.stroke",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 13
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#000000"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#144b53"
+            },
+            {
+                "lightness": 14
+            },
+            {
+                "weight": 1.4
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "all",
+        "stylers": [
+            {
+                "color": "#08304b"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#0c4152"
+            },
+            {
+                "lightness": 5
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#000000"
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#0b434f"
+            },
+            {
+                "lightness": 25
+            }
+        ]
+    },
+    {
+        "featureType": "road.arterial",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#000000"
+            }
+        ]
+    },
+    {
+        "featureType": "road.arterial",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#0b3d51"
+            },
+            {
+                "lightness": 16
+            }
+        ]
+    },
+    {
+        "featureType": "road.local",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "all",
+        "stylers": [
+            {
+                "color": "#146474"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "all",
+        "stylers": [
+            {
+                "color": "#021019"
+            }
+        ]
+    }
+]

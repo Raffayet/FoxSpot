@@ -1,4 +1,3 @@
-import React from "react";
 import MapView, { Marker as MapMarker, MapViewProps } from "react-native-maps";
 import { StyleSheet, View, ActivityIndicator } from "react-native";
 import { Event } from "@/model/event";
@@ -24,6 +23,9 @@ export default function MapComponent({ events, onMarkerPress, mapRef }: Props) {
     }
 
     return (
+
+
+
         <MapView
             ref={mapRef}
             style={styles.map}
