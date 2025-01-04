@@ -85,7 +85,7 @@ export default function App() {
                 mapRef={mapRef}
             />
 
-            {/* Search Bar */}
+            {/* Search Bar with Location-Arrow Button */}
             <View style={styles.searchContainer}>
                 <Icon name="map-marker" size={20} color="#888" style={styles.mapIcon} />
                 <TextInput
@@ -94,6 +94,9 @@ export default function App() {
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
+                <TouchableOpacity style={styles.arrowButton} onPress={() => console.log("Location-arrow clicked")}>
+                    <Icon name="location-arrow" size={18} color="#fff" />
+                </TouchableOpacity>
             </View>
 
             {/* Filter Buttons */}
@@ -166,6 +169,15 @@ const styles = ScaledSheet.create({
         fontSize: "14@s",
         color: "#333",
         paddingHorizontal: "10@s",
+    },
+    arrowButton: {
+        backgroundColor: "#0066ff",
+        borderRadius: "50@s",
+        width: "36@s",
+        height: "36@s",
+        alignItems: "center",
+        justifyContent: "center",
+        marginLeft: "10@s",
     },
     addButton: {
         position: "absolute",

@@ -12,15 +12,11 @@ const queryClient = new QueryClient();
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const router = useRouter();
-    const [showEventDetails, setShowEventDetails] = useState(false); // Manage event details visibility
+    const [showEventDetails, setShowEventDetails] = useState(false);
 
     const handleEventClick = () => {
         router.push("/"); // Navigate to /
-        setShowEventDetails(false); // Ensure event details popup is hidden
-    };
-
-    const handleCloseDetails = () => {
-        setShowEventDetails(false); // Hide event details
+        setShowEventDetails(false);
     };
 
     return (
@@ -45,7 +41,7 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="home"
-                            size={28}
+                            size={router.pathname === "/landing" ? 30 : 25}
                             color={router.pathname === "/landing" ? Colors[colorScheme].tint : "#ccc"}
                         />
                         <Text
@@ -61,11 +57,11 @@ export default function TabLayout() {
                     {/* Map Tab */}
                     <TouchableOpacity
                         style={styles.navItem}
-                        onPress={handleEventClick} // Navigate directly to /
+                        onPress={handleEventClick}
                     >
                         <FontAwesome
                             name="map-marker"
-                            size={28}
+                            size={router.pathname === "/" ? 30 : 25}
                             color={router.pathname === "/" ? Colors[colorScheme].tint : "#ccc"}
                         />
                         <Text
@@ -78,13 +74,13 @@ export default function TabLayout() {
                         </Text>
                     </TouchableOpacity>
 
-                    {/* Central Add Event Button */}
-                    <TouchableOpacity
-                        style={styles.centralButton}
-                        onPress={() => router.push("/add-event")}
-                    >
-                        <FontAwesome name="plus" size={28} color="#fff" />
-                    </TouchableOpacity>
+                    {/* Central Floating Button */}
+                    {/*<TouchableOpacity*/}
+                    {/*    style={styles.centralButton}*/}
+                    {/*    onPress={() => router.push("/add-event")}*/}
+                    {/*>*/}
+                    {/*    <FontAwesome name="plus" size={28} color="#fff" />*/}
+                    {/*</TouchableOpacity>*/}
 
                     {/* Explore Tab */}
                     <TouchableOpacity
@@ -93,7 +89,7 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="paper-plane"
-                            size={28}
+                            size={router.pathname === "/explore" ? 30 : 25}
                             color={router.pathname === "/explore" ? Colors[colorScheme].tint : "#ccc"}
                         />
                         <Text
@@ -113,7 +109,7 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="money"
-                            size={28}
+                            size={router.pathname === "/billing" ? 30 : 25}
                             color={router.pathname === "/billing" ? Colors[colorScheme].tint : "#ccc"}
                         />
                         <Text
@@ -134,25 +130,25 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "transparent", // Transparent background for the container
+        backgroundColor: "transparent",
     },
     customNavBar: {
         position: "absolute",
-        bottom: 3, // Adjust the position
-        left: 20,
-        right: 20,
+        bottom: 10,
+        left: 10,
+        right: 10,
         flexDirection: "row",
         justifyContent: "space-around",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.9)", // Darker semi-transparent background
-        borderRadius: 50, // Fully round container
-        height: 80,
-        paddingHorizontal: 15,
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
+        borderRadius: 40,
+        height: 70,
+        paddingHorizontal: 10,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 5 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 5,
-        elevation: 10, // Shadow for Android
+        elevation: 10,
     },
     navItem: {
         justifyContent: "center",
@@ -160,22 +156,22 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     navText: {
-        marginTop: 5,
+        marginTop: 3,
         fontSize: 12,
-        fontWeight: "bold",
+        fontWeight: "500",
     },
     centralButton: {
         backgroundColor: Colors["light"].tint,
-        width: 70,
-        height: 70,
-        borderRadius: 35,
+        width: 65,
+        height: 65,
+        borderRadius: 32.5,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: -35, // Floating effect
-        elevation: 10,
+        marginTop: -30,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 5 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 6,
+        elevation: 10,
     },
 });
