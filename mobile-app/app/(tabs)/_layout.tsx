@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Tabs, useRouter } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useSegments } from "expo-router";
 
 // Create a Query Client instance
 const queryClient = new QueryClient();
@@ -12,7 +13,10 @@ const queryClient = new QueryClient();
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const router = useRouter();
+    const segments = useSegments();
     const [showEventDetails, setShowEventDetails] = useState(false);
+
+    const currentPath = segments[1];
 
     const handleEventClick = () => {
         router.push("/"); // Navigate to /
@@ -41,13 +45,13 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="home"
-                            size={router.pathname === "/landing" ? 30 : 25}
-                            color={router.pathname === "/landing" ? Colors[colorScheme].tint : "#ccc"}
+                            size={currentPath === "landing" ? 30 : 25}
+                            color={currentPath === "landing" ? "#ffffff" : "#ccc"}
                         />
                         <Text
                             style={[
                                 styles.navText,
-                                { color: router.pathname === "/landing" ? Colors[colorScheme].tint : "#ccc" },
+                                { color: currentPath === "landing" ? "#ffffff" : "#ccc" },
                             ]}
                         >
                             Home
@@ -61,13 +65,13 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="map-marker"
-                            size={router.pathname === "/" ? 30 : 25}
-                            color={router.pathname === "/" ? Colors[colorScheme].tint : "#ccc"}
+                            size={currentPath === undefined ? 30 : 25}
+                            color={currentPath === undefined ? "#ffffff" : "#ccc"}
                         />
                         <Text
                             style={[
                                 styles.navText,
-                                { color: router.pathname === "/" ? Colors[colorScheme].tint : "#ccc" },
+                                { color: currentPath === "/" ? "#ffffff" : "#ccc" },
                             ]}
                         >
                             Map
@@ -89,13 +93,13 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="paper-plane"
-                            size={router.pathname === "/explore" ? 30 : 25}
-                            color={router.pathname === "/explore" ? Colors[colorScheme].tint : "#ccc"}
+                            size={currentPath === "explore" ? 30 : 25}
+                            color={currentPath === "explore" ? "#ffffff" : "#ccc"}
                         />
                         <Text
                             style={[
                                 styles.navText,
-                                { color: router.pathname === "/explore" ? Colors[colorScheme].tint : "#ccc" },
+                                { color: currentPath === "explore" ? "#ffffff" : "#ccc" },
                             ]}
                         >
                             Explore
@@ -109,13 +113,13 @@ export default function TabLayout() {
                     >
                         <FontAwesome
                             name="money"
-                            size={router.pathname === "/billing" ? 30 : 25}
-                            color={router.pathname === "/billing" ? Colors[colorScheme].tint : "#ccc"}
+                            size={currentPath === "billing" ? 30 : 25}
+                            color={currentPath === "billing" ? "#ffffff" : "#ccc"}
                         />
                         <Text
                             style={[
                                 styles.navText,
-                                { color: router.pathname === "/billing" ? Colors[colorScheme].tint : "#ccc" },
+                                { color: currentPath === "billing" ? "#ffffff" : "#ccc" },
                             ]}
                         >
                             Billing

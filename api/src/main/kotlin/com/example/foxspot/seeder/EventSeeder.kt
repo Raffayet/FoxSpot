@@ -54,7 +54,16 @@ class EventSeeder(private val eventRepository: EventRepository): SeedCommon {
                 description = "Enjoy a fine dining experience with Alex at a fancy restaurant.",
                 image = "https://example.com/images/dinner_with_alex.jpg",
                 location = Point(45.2530, 19.8590)
-            )
+            ),
+            Event(
+                name = "Coffee with Sarah",
+                address = "123 Main Street",
+                city = "Novi Sad",
+                eventType = "Party",
+                description = "Enjoy a casual coffee with Sarah at the corner cafe.",
+                image = "https://example.com/images/coffee_with_sarah.jpg",
+                location = Point(45.2515, 19.8316)
+            ),
         )
         eventRepository.saveAll(events)
     }
