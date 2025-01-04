@@ -58,7 +58,7 @@ const FilterButtonsComponent = ({ onFilterSelect, activeFilter }) => {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        top: 70,
+        top: 100,
         left: 0,
         right: 0,
         flexDirection: 'row',

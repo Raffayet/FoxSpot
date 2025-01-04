@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
     Animated,
-    StyleSheet,
-    Text,
     TouchableOpacity,
     View,
+    TextInput,
+    Text,
 } from "react-native";
 import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
@@ -15,10 +15,12 @@ import { Event } from "@/model/event";
 import MapView from "react-native-maps";
 import { useQuery } from "@tanstack/react-query";
 import { ScaledSheet } from "react-native-size-matters";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -28,16 +30,16 @@ export default function App() {
     const mapRef = useRef<MapView>(null);
 
     const { refetch, isLoading, isError, data } = useQuery({
-        queryKey: ['events'],
+        queryKey: ["events"],
         queryFn: EventService.getAllEvents,
-        refetchInterval: 5000,
+        refetchInterval: 5000, // Automatically fetch data every 5 seconds
     });
 
-    const applyFilter = (eventType: null, eventsList: any[]) => {
+    const applyFilter = (eventType: string | null, eventsList: Event[]) => {
         if (!eventType) {
-            return eventsList;
+            return eventsList; // Return all events if no filter is applied
         }
-        return eventsList.filter((event: { eventType: any; }) => event.eventType === eventType);
+        return eventsList.filter((event) => event.eventType === eventType);
     };
 
     useEffect(() => {
@@ -48,18 +50,18 @@ export default function App() {
     }, [data]);
 
     useEffect(() => {
-        if (data) {
-            setEvents(data as Event[]);
-            const filteredData = applyFilter(activeFilter, data as Event[]);
-            setFilteredEvents(filteredData);
-        }
-    }, [data, activeFilter]);
+        const filteredData = applyFilter(activeFilter, events);
+        const searchFilteredData = filteredData.filter((event) =>
+            event.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredEvents(searchFilteredData);
+    }, [events, activeFilter, searchQuery]);
 
-    const handleFilterSelect = (eventType: React.SetStateAction<null>) => {
+    const handleFilterSelect = (eventType: string | null) => {
         setActiveFilter(eventType);
     };
 
-    const handleMarkerPress = (event: React.SetStateAction<Event | null>) => {
+    const handleMarkerPress = (event: Event) => {
         setSelectedEvent({
             ...event,
             tags: event.tags || [],
@@ -76,12 +78,25 @@ export default function App() {
 
     return (
         <View style={styles.container}>
+            {/* Map Component */}
             <MapComponent
                 events={filteredEvents}
                 onMarkerPress={handleMarkerPress}
                 mapRef={mapRef}
             />
 
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+                <Icon name="map-marker" size={20} color="#888" style={styles.mapIcon} />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search location..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
+            </View>
+
+            {/* Filter Buttons */}
             <FilterButtonsComponent
                 onFilterSelect={handleFilterSelect}
                 activeFilter={activeFilter}
@@ -125,21 +140,46 @@ const styles = ScaledSheet.create({
     container: {
         flex: 1,
         position: "relative",
-
+    },
+    searchContainer: {
+        position: "absolute",
+        top: "40@s",
+        left: "10@s",
+        right: "10@s",
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        borderRadius: "20@s",
+        paddingHorizontal: "10@s",
+        paddingVertical: "5@s",
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: "5@s",
+        zIndex: 1000, // Ensure it appears above the map
+    },
+    mapIcon: {
+        marginRight: "10@s",
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: "14@s",
+        color: "#333",
+        paddingHorizontal: "10@s",
     },
     addButton: {
         position: "absolute",
-        bottom: '95@vs',
+        bottom: "95@vs",
         backgroundColor: "#007BFF",
-        padding: '15@s',
-        borderRadius: '50@s',
+        padding: "15@s",
+        borderRadius: "50@s",
         elevation: 5,
         alignSelf: "center",
         zIndex: 10, // Ensure it fully overlays everything else
     },
     addButtonText: {
         color: "white",
-        fontSize: '16@s',
+        fontSize: "16@s",
         fontWeight: "bold",
     },
     eventDetailsOverlay: {

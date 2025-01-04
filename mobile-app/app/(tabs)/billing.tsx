@@ -1,19 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList } from 'react-native';
 import { ScaledSheet } from 'react-native-size-matters';
-import {EventService} from "@/service/event.service";
 import { useQuery } from "@tanstack/react-query";
 import {TransactionService} from "@/service/transaction.service";
 import {Transaction} from "@/model/transaction";
-import {Event} from "@/model/event";
 import {InvoiceService} from "@/service/invoice.service";
-
-// const transactions = [
-//     { id: '1', title: 'Subscription', date: '2024-12-01', amount: '€ 10.99' },
-//     { id: '2', title: 'Premium Feature', date: '2024-12-05', amount: '€ 4.99' },
-//     { id: '3', title: 'One-Time Payment', date: '2024-12-10', amount: '€ 20.00' },
-//     { id: '4', title: 'Renewal', date: '2024-12-15', amount: '€ 15.00' },
-// ];
 
 export default function BillingPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
