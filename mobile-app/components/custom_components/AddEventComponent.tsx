@@ -35,10 +35,27 @@ export default function AddEventComponent(props: Props) {
         eventType: "",
         image: "",
         tags: [],
+        startTime: "",
+        endTime: ""
     });
 
     const [startDatePickerVisible, setStartDatePickerVisible] = useState<boolean>()
     const [endDatePickerVisible, setEndDatePickerVisible] = useState<boolean>()
+
+    const handleCancel = () => {
+        props.setModalVisible(false)
+
+        setNewEvent({
+            address: "",
+            description: "",
+            city: "",
+            eventType: "",
+            image: "",
+            tags: [],
+            startTime: "",
+            endTime: ""
+        })
+    }
 
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -159,7 +176,16 @@ export default function AddEventComponent(props: Props) {
                         <DateTimePickerModal
                             isVisible={startDatePickerVisible}
                             mode="datetime"
+                            minimumDate={new Date()} // Restrict to the current date and time
+                            maximumDate={newEvent.endTime ? new Date(newEvent.endTime) : undefined} // Restrict to before endTime
                             onConfirm={(datetime) => {
+                                const endTime = newEvent.endTime ? new Date(newEvent.endTime) : null;
+                                if (endTime) {
+                                    if (datetime > endTime) {
+                                        setNewEvent({ ...newEvent, startTime: endTime.toString() });
+                                        datetime = endTime
+                                    }
+                                }
                                 setNewEvent({ ...newEvent, startTime: datetime.toISOString() });
                                 setStartDatePickerVisible(false);
                             }}
@@ -172,8 +198,15 @@ export default function AddEventComponent(props: Props) {
                         <DateTimePickerModal
                             isVisible={endDatePickerVisible}
                             mode="datetime"
+                            minimumDate={newEvent.startTime ? new Date(newEvent.startTime) : new Date()} // Restrict to after startTime
                             onConfirm={(datetime) => {
-                                // Converting to UTC format before sending to API
+                                const startTime = newEvent.startTime ? new Date(newEvent.startTime) : null;
+                                if (startTime) {
+                                    if (datetime < startTime) {
+                                        setNewEvent({ ...newEvent, endTime: startTime.toString() });
+                                        datetime = startTime
+                                    }
+                                }
                                 setNewEvent({ ...newEvent, endTime: datetime.toISOString() });
                                 setEndDatePickerVisible(false);
                             }}
@@ -190,7 +223,7 @@ export default function AddEventComponent(props: Props) {
                         <View style={styles.fullscreenModalButtonRow}>
                             <TouchableOpacity
                                 style={[styles.modalButton, styles.cancelButton]}
-                                onPress={() => props.setModalVisible(false)}
+                                onPress={handleCancel}
                             >
                                 <Text style={styles.modalButtonText}>CANCEL</Text>
                             </TouchableOpacity>
