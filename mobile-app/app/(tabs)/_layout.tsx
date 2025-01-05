@@ -11,13 +11,13 @@ export default function TabLayout() {
     const [activeIndex, setActiveIndex] = useState(0);
     const bubbleAnim = useRef(new Animated.Value(0)).current; // Smooth bubble transition
     const iconScaleAnim = useRef([]).current; // Icon scaling animations
-    const iconTranslateYAnim = useRef([]).current; // Icon vertical movement animations
+    const translateYAnim = useRef([]).current; // Vertical movement animations for space
 
     // Initialize animations for each tab
     useEffect(() => {
         for (let i = 0; i < 4; i++) {
             iconScaleAnim[i] = new Animated.Value(1);
-            iconTranslateYAnim[i] = new Animated.Value(0);
+            translateYAnim[i] = new Animated.Value(0);
         }
     }, []);
 
@@ -33,18 +33,18 @@ export default function TabLayout() {
         // Reset animations for all icons
         for (let i = 0; i < 4; i++) {
             iconScaleAnim[i].setValue(1);
-            iconTranslateYAnim[i].setValue(0);
+            translateYAnim[i].setValue(0);
         }
 
-        // Animate the selected tab's icon
+        // Animate the selected tab's icon and space
         Animated.parallel([
             Animated.timing(iconScaleAnim[index], {
                 toValue: 1.4, // Larger scale
                 duration: 300,
                 useNativeDriver: true,
             }),
-            Animated.timing(iconTranslateYAnim[index], {
-                toValue: -10, // Pop-out effect
+            Animated.timing(translateYAnim[index], {
+                toValue: -10, // Move upwards
                 duration: 300,
                 useNativeDriver: true,
             }),
@@ -68,7 +68,7 @@ export default function TabLayout() {
     const getIconStyle = (index) => ({
         transform: [
             { scale: iconScaleAnim[index] || 1 },
-            { translateY: iconTranslateYAnim[index] || 0 },
+            { translateY: translateYAnim[index] || 0 },
         ],
     });
 
@@ -129,15 +129,16 @@ const styles = StyleSheet.create({
     },
     customNavBar: {
         position: "absolute",
-        bottom: 20,
-        left: 20,
-        right: 20,
+        bottom: 0,
+        left: 0,
+        right: 0,
         flexDirection: "row",
         justifyContent: "space-around",
         alignItems: "center",
         backgroundColor: "#1e1e1e",
-        borderRadius: 40,
-        height: 80,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        height: 75,
         paddingHorizontal: 10,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: -4 },
@@ -145,20 +146,6 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 10,
     },
-    // activeBubble: {
-    //     position: "absolute",
-    //     width: 50,
-    //     height: 50,
-    //     backgroundColor: "#007AFF",
-    //     borderRadius: 25,
-    //     top: 15, // Slightly above the nav bar
-    //     left: 25, // Initial position
-    //     zIndex: -1,
-    //     shadowColor: "#007AFF",
-    //     shadowOffset: { width: 0, height: 2 },
-    //     shadowOpacity: 0.4,
-    //     shadowRadius: 6,
-    // },
     navItem: {
         justifyContent: "center",
         alignItems: "center",
@@ -173,7 +160,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     activeIconContainer: {
-        backgroundColor: "#635f5f",
+        backgroundColor: "#007AFF",
     },
     navText: {
         marginTop: 5,
