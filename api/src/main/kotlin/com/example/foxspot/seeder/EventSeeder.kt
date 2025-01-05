@@ -64,6 +64,78 @@ class EventSeeder(private val eventRepository: EventRepository): SeedCommon {
                 image = "https://example.com/images/coffee_with_sarah.jpg",
                 location = Point(45.2515, 19.8316)
             ),
+            Event(
+                name = "Concert at the Fortress",
+                address = "Petrovaradin Fortress",
+                city = "Petrovaradin",
+                eventType = "Music",
+                description = "Enjoy a live concert under the stars at the Petrovaradin Fortress.",
+                image = "https://example.com/images/concert_fortress.jpg",
+                location = Point(45.2520, 19.8610)
+            ),
+            Event(
+                name = "Wine Tasting",
+                address = "Vinarija Fruška Gora",
+                city = "Irig",
+                eventType = "Gastronomy",
+                description = "Taste exquisite wines at a vineyard near Novi Sad.",
+                image = "https://example.com/images/wine_tasting.jpg",
+                location = Point(45.1443, 19.9112)
+            ),
+            Event(
+                name = "Nature Walk",
+                address = "Fruška Gora National Park",
+                city = "Irig",
+                eventType = "Outdoor",
+                description = "Explore the beauty of Fruška Gora through a guided nature walk.",
+                image = "https://example.com/images/nature_walk.jpg",
+                location = Point(45.1628, 19.9348)
+            ),
+            Event(
+                name = "Zmaj Jovina Street Tour",
+                address = "Zmaj Jovina Street",
+                city = "Novi Sad",
+                eventType = "Sightseeing",
+                description = "Discover the history and charm of Novi Sad's main pedestrian street.",
+                image = "https://example.com/images/zmaj_jovina_tour.jpg",
+                location = Point(45.2567, 19.8473)
+            ),
+            Event(
+                name = "Cycling Adventure",
+                address = "Danube Cycling Route",
+                city = "Novi Sad",
+                eventType = "Exercise",
+                description = "Join a group cycling adventure along the Danube.",
+                image = "https://example.com/images/cycling_adventure.jpg",
+                location = Point(45.2495, 19.8514)
+            ),
+            Event(
+                name = "Kayaking on the Danube",
+                address = "Danube River",
+                city = "Novi Sad",
+                eventType = "Outdoor",
+                description = "Paddle along the Danube and enjoy scenic river views.",
+                image = "https://example.com/images/kayaking_danube.jpg",
+                location = Point(45.2383, 19.8598)
+            ),
+            Event(
+                name = "Traditional Market Day",
+                address = "Futoška Pijaca",
+                city = "Novi Sad",
+                eventType = "Market",
+                description = "Experience the local flavors and crafts at Futoška Market.",
+                image = "https://example.com/images/market_day.jpg",
+                location = Point(45.2526, 19.8445)
+            ),
+            Event(
+                name = "Fishing by the River",
+                address = "Kamenički Park",
+                city = "Novi Sad",
+                eventType = "Outdoor",
+                description = "Relax and fish in the peaceful surroundings of Kamenički Park.",
+                image = "https://example.com/images/fishing_river.jpg",
+                location = Point(45.2312, 19.8184)
+            )
         )
         eventRepository.saveAll(events)
     }

@@ -18,6 +18,11 @@ class EventController(
         return eventService.getAll()
     }
 
+    @GetMapping("/search")
+    fun search(@RequestParam query: String): List<Event> {
+        return eventService.searchEvents(query)
+    }
+
     @PostMapping("/create")
     fun createEvent(@RequestBody event: Event): ResponseEntity<Event> {
         val savedEvent = eventService.create(event)

@@ -4,7 +4,7 @@ import {
     TouchableOpacity,
     View,
     TextInput,
-    Text,
+    Text, FlatList,
 } from "react-native";
 import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
@@ -16,16 +16,24 @@ import MapView from "react-native-maps";
 import { useQuery } from "@tanstack/react-query";
 import { ScaledSheet } from "react-native-size-matters";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Point } from "@/model/point"
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const popupAnim = useRef(new Animated.Value(300)).current;
     const [activeFilter, setActiveFilter] = useState(null);
+
+    // Search
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<Event[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
 
     const mapRef = useRef<MapView>(null);
 
@@ -51,11 +59,16 @@ export default function App() {
 
     useEffect(() => {
         const filteredData = applyFilter(activeFilter, events);
-        const searchFilteredData = filteredData.filter((event) =>
-            event.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setFilteredEvents(searchFilteredData);
+        setFilteredEvents(filteredData);
     }, [events, activeFilter, searchQuery]);
+
+    useEffect(() => {
+        if (debouncedSearchQuery.trim()) {
+            handleSearch(debouncedSearchQuery);
+        } else {
+            setSearchResults([]); // Clear results if query is empty
+        }
+    }, [debouncedSearchQuery]);
 
     const handleFilterSelect = (eventType: string | null) => {
         setActiveFilter(eventType);
@@ -70,11 +83,40 @@ export default function App() {
         Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
     };
 
+    const handleSearch = async (query: string) => {
+        setIsSearching(true);
+        try {
+            const results = await EventService.searchEvents(query);
+            setSearchResults(results);
+        } catch (error) {
+            console.error("Error fetching search results:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
     const handleClosePopup = () => {
         Animated.timing(popupAnim, { toValue: 300, duration: 300, useNativeDriver: true }).start(() =>
             setPopupVisible(false)
         );
     };
+
+    const zoomLocation = (lat: string, long: string) => {
+        mapRef?.current?.animateToRegion({
+            latitude: parseFloat(lat),
+            longitude: parseFloat(long),
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        });
+    }
+
+    const renderSearchResult = ({ item }: { item: Event }) => (
+        <TouchableOpacity style={styles.resultItem} onPress={() => zoomLocation(item.location?.lat.toString() as string, item.location?.long.toString() as string)}>
+            <Text style={styles.resultName}>{item.name}</Text>
+            <Text style={styles.resultDescription}>{item.address}</Text>
+            <Text style={styles.resultDescription}>{item.description}</Text>
+        </TouchableOpacity>
+    );
 
     return (
         <View style={styles.container}>
@@ -90,14 +132,25 @@ export default function App() {
                 <Icon name="map-marker" size={20} color="#888" style={styles.mapIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Search location..."
+                    placeholder="Search events..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
-                <TouchableOpacity style={styles.arrowButton} onPress={() => console.log("Location-arrow clicked")}>
-                    <Icon name="location-arrow" size={18} color="#fff" />
+                <TouchableOpacity style={styles.arrowButton} onPress={handleSearch}>
+                    <Icon name="search" size={18} color="#fff" />
                 </TouchableOpacity>
             </View>
+
+            {/* Search Results List */}
+            {searchResults.length > 0 && (
+                <View style={styles.resultsContainer}>
+                    <FlatList
+                        data={searchResults}
+                        keyExtractor={(item) => item.id.toString()} // Assuming events have an 'id' field
+                        renderItem={renderSearchResult}
+                    />
+                </View>
+            )}
 
             {/* Filter Buttons */}
             <FilterButtonsComponent
@@ -202,5 +255,33 @@ const styles = ScaledSheet.create({
         right: 0,
         backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
         zIndex: 10, // Ensure it fully overlays everything else
+    },
+    resultsContainer: {
+        marginTop: '40@s',
+        position: "absolute",
+        top: 60,
+        left: 10,
+        right: 10,
+        backgroundColor: "#fff",
+        borderRadius: 10,
+        padding: 10,
+        elevation: 5,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        zIndex: 2
+    },
+    resultItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
+    },
+    resultName: {
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    resultDescription: {
+        fontSize: 14,
+        color: "#555",
     },
 });

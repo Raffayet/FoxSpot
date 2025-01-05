@@ -28,5 +28,10 @@ export class EventService {
         }
     }
 
+    static async searchEvents(query: string): Promise<Event[]> {
+        const response = await api.get<Event[]>(`${EventService.URI}/search?query=${query}`);
+        return response.data
+    }
+
 
 }

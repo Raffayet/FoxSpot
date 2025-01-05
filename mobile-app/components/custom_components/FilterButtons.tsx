@@ -3,6 +3,7 @@ import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { getEventTypeDetails } from "@/util/eventTypes";
+import {ScaledSheet} from "react-native-size-matters";
 
 const FilterButtonsComponent = ({ onFilterSelect, activeFilter }) => {
     // Event Types
@@ -47,7 +48,7 @@ const FilterButtonsComponent = ({ onFilterSelect, activeFilter }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const styles = ScaledSheet.create({
     container: {
         position: "absolute",
         top: 100,
@@ -56,6 +57,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         paddingVertical: 10,
         zIndex: 1,
+        marginLeft: '5@s',
+        marginRight: '5@s',
+        marginTop: '8@s'
     },
     button: {
         paddingVertical: 10,
