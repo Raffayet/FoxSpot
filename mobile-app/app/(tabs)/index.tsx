@@ -5,6 +5,7 @@ import {
     View,
     TextInput,
     Text,
+    Easing,
 } from "react-native";
 import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
@@ -24,7 +25,8 @@ export default function App() {
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-    const popupAnim = useRef(new Animated.Value(300)).current;
+    const popupAnim = useRef(new Animated.Value(300)).current; // Initial position (offscreen)
+    const fadeAnim = useRef(new Animated.Value(0)).current; // Initial opacity
     const [activeFilter, setActiveFilter] = useState(null);
 
     const mapRef = useRef<MapView>(null);
@@ -67,13 +69,38 @@ export default function App() {
             tags: event.tags || [],
         });
         setPopupVisible(true);
-        Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+
+        Animated.parallel([
+            Animated.timing(popupAnim, {
+                toValue: 0, // Slide to fully visible
+                duration: 500,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnim, {
+                toValue: 1, // Fade in
+                duration: 500,
+                useNativeDriver: true,
+            }),
+        ]).start();
     };
 
     const handleClosePopup = () => {
-        Animated.timing(popupAnim, { toValue: 300, duration: 300, useNativeDriver: true }).start(() =>
-            setPopupVisible(false)
-        );
+        Animated.parallel([
+            Animated.timing(popupAnim, {
+                toValue: 300, // Slide back offscreen
+                duration: 500,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnim, {
+                toValue: 0, // Fade out
+                duration: 500,
+                useNativeDriver: true,
+            }),
+        ]).start(() => {
+            setPopupVisible(false); // Ensure popup is hidden
+        });
     };
 
     return (
@@ -94,7 +121,10 @@ export default function App() {
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
-                <TouchableOpacity style={styles.arrowButton} onPress={() => console.log("Location-arrow clicked")}>
+                <TouchableOpacity
+                    style={styles.arrowButton}
+                    onPress={() => console.log("Location-arrow clicked")}
+                >
                     <Icon name="location-arrow" size={18} color="#fff" />
                 </TouchableOpacity>
             </View>
@@ -124,7 +154,12 @@ export default function App() {
 
             {/* Event Details Popup */}
             {popupVisible && selectedEvent && (
-                <View style={styles.eventDetailsOverlay}>
+                <Animated.View
+                    style={[
+                        styles.eventDetailsOverlay,
+                        { opacity: fadeAnim, transform: [{ translateY: popupAnim }] },
+                    ]}
+                >
                     <EventDetailsComponent
                         selectedEvent={selectedEvent}
                         popupAnim={popupAnim}
@@ -133,7 +168,7 @@ export default function App() {
                         setPopupVisible={setPopupVisible}
                         handleClosePopup={handleClosePopup}
                     />
-                </View>
+                </Animated.View>
             )}
         </View>
     );
@@ -159,7 +194,7 @@ const styles = ScaledSheet.create({
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: "5@s",
-        zIndex: 1000, // Ensure it appears above the map
+        zIndex: 1000,
     },
     mapIcon: {
         marginRight: "10@s",
@@ -187,7 +222,7 @@ const styles = ScaledSheet.create({
         borderRadius: "50@s",
         elevation: 5,
         alignSelf: "center",
-        zIndex: 10, // Ensure it fully overlays everything else
+        zIndex: 10,
     },
     addButtonText: {
         color: "white",
@@ -200,7 +235,7 @@ const styles = ScaledSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-        zIndex: 10, // Ensure it fully overlays everything else
+        // backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+        zIndex: 10,
     },
 });
