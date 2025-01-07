@@ -5,6 +5,7 @@ import {
     View,
     TextInput,
     Text, FlatList,
+    Easing
 } from "react-native";
 import { EventService } from "@/service/event.service";
 import MapComponent from "@/components/custom_components/MapComponent";
@@ -25,7 +26,8 @@ export default function App() {
     const [modalVisible, setModalVisible] = useState(false);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-    const popupAnim = useRef(new Animated.Value(300)).current;
+    const popupAnim = useRef(new Animated.Value(300)).current; // Initial position (offscreen)
+    const fadeAnim = useRef(new Animated.Value(0)).current; // Initial opacity
     const [activeFilter, setActiveFilter] = useState(null);
 
     // Search
@@ -80,7 +82,20 @@ export default function App() {
             tags: event.tags || [],
         });
         setPopupVisible(true);
-        Animated.timing(popupAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+
+        Animated.parallel([
+            Animated.timing(popupAnim, {
+                toValue: 0, // Slide to fully visible
+                duration: 500,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnim, {
+                toValue: 1, // Fade in
+                duration: 500,
+                useNativeDriver: true,
+            }),
+        ]).start();
     };
 
     const handleSearch = async (query: string) => {
@@ -96,9 +111,21 @@ export default function App() {
     };
 
     const handleClosePopup = () => {
-        Animated.timing(popupAnim, { toValue: 300, duration: 300, useNativeDriver: true }).start(() =>
-            setPopupVisible(false)
-        );
+        Animated.parallel([
+            Animated.timing(popupAnim, {
+                toValue:200, // Slide back offscreen
+                duration: 500,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnim, {
+                toValue: 0, // Fade out
+                duration: 500,
+                useNativeDriver: true,
+            }),
+        ]).start(() => {
+            setPopupVisible(false); // Ensure popup is hidden
+        });
     };
 
     const zoomLocation = (lat: string, long: string) => {
@@ -108,6 +135,7 @@ export default function App() {
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
         });
+        setSearchResults([]); // Close search results
     }
 
     const renderSearchResult = ({ item }: { item: Event }) => (
@@ -177,7 +205,12 @@ export default function App() {
 
             {/* Event Details Popup */}
             {popupVisible && selectedEvent && (
-                <View style={styles.eventDetailsOverlay}>
+                <Animated.View
+                    style={[
+                        styles.eventDetailsOverlay,
+                        { opacity: fadeAnim, transform: [{ translateY: popupAnim }] },
+                    ]}
+                >
                     <EventDetailsComponent
                         selectedEvent={selectedEvent}
                         popupAnim={popupAnim}
@@ -186,7 +219,7 @@ export default function App() {
                         setPopupVisible={setPopupVisible}
                         handleClosePopup={handleClosePopup}
                     />
-                </View>
+                </Animated.View>
             )}
         </View>
     );
@@ -246,15 +279,6 @@ const styles = ScaledSheet.create({
         color: "white",
         fontSize: "16@s",
         fontWeight: "bold",
-    },
-    eventDetailsOverlay: {
-        position: "absolute",
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-        zIndex: 10, // Ensure it fully overlays everything else
     },
     resultsContainer: {
         marginTop: '40@s',
