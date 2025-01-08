@@ -20,6 +20,7 @@ export default function TabLayout() {
         { route: "/", icon: "map-marker", label: "Map" },
         { route: "/explore", icon: "paper-plane", label: "Explore" },
         { route: "/billing", icon: "money", label: "Billing" },
+        { route: "/listing", icon: "list", label: "Events" },
     ];
 
     // Initialize animations for each tab
@@ -37,7 +38,7 @@ export default function TabLayout() {
         }
 
         // Trigger animations whenever the activeIndex changes
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 5; i++) {
             iconScaleAnim[i].setValue(1);
             translateYAnim[i].setValue(0);
         }

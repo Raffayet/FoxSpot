@@ -29,7 +29,7 @@ class Seeder(
         invoiceSeeder.createSeedData()
         println("Invoices created!")
 
-        println("All demo deata created!")
+        println("All demo data created!")
     }
 
     // Every time we run the app we must first delete the data from the previous runtime
