@@ -6,6 +6,7 @@ import com.example.foxspot.FoxspotApplication
 import com.example.foxspot.controller.EventController
 import com.example.foxspot.controller.InvoiceController
 import com.example.foxspot.controller.TransactionController
+import com.example.foxspot.model.classes.Point
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.http.ResponseEntity
@@ -65,6 +66,13 @@ class Handler : RequestHandler<Map<String, Any>, String> {
         val startTimeString = eventData["startTime"] as? String
         val endTimeString = eventData["endTime"] as? String
 
+        // Retrieve latitude and longitude from input
+        val latitude = eventData["latitude"] as? Double
+                ?: throw IllegalArgumentException("Missing 'latitude' field in event data.")
+        val longitude = eventData["longitude"] as? Double
+                ?: throw IllegalArgumentException("Missing 'longitude' field in event data.")
+        val location = Point(latitude, longitude)
+
         return com.example.foxspot.model.classes.Event(
                 name = eventData["name"] as? String,
                 address = eventData["address"] as? String,
@@ -74,8 +82,8 @@ class Handler : RequestHandler<Map<String, Any>, String> {
                 image = eventData["image"] as? String,
                 startTime = startTimeString?.let { Instant.parse(it) },
                 endTime = endTimeString?.let { Instant.parse(it) },
-                status = com.example.foxspot.model.enum.EventStatus.valueOf(eventData["status"] as? String ?: "SCHEDULED")
+                status = com.example.foxspot.model.enum.EventStatus.valueOf(eventData["status"] as? String ?: "SCHEDULED"),
+                location = location
         )
     }
-
 }
