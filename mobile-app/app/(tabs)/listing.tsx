@@ -192,9 +192,10 @@ const styles = ScaledSheet.create({
     },
     icon: {
         marginRight: 8,
+        color: '#FFA000'
     },
     buttonText: {
-        color: "#fff",
+        color: "#FFA000",
         fontSize: 12,
         fontWeight: "bold",
     },

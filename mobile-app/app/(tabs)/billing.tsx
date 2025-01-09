@@ -127,7 +127,7 @@ const styles = ScaledSheet.create({
     balanceAmountPlus: {
         fontSize: '24@s',
         fontFamily: 'Poppins-Bold, sans-serif',
-        color: '#4caf50',
+        color: '#FFA000',
         textAlign: 'center',
         fontWeight: 'bold',
         padding: '5@s'

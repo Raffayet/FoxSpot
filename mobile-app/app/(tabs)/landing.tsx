@@ -114,7 +114,7 @@ const styles = ScaledSheet.create({
     },
     highlight: {
         fontFamily: "Poppins-Bold",
-        color: "#d5b43e",
+        color: "#FFA000",
         fontWeight: "bold",
     },
     buttonContainer: {
@@ -146,7 +146,7 @@ const styles = ScaledSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#d5b43e",
+        backgroundColor: "#FFA000",
         paddingVertical: '15@s',
         paddingHorizontal: '20@s',
         borderRadius: '50@s',

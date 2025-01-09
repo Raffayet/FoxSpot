@@ -259,7 +259,7 @@ const styles = ScaledSheet.create({
         paddingHorizontal: "10@s",
     },
     arrowButton: {
-        backgroundColor: "#0066ff",
+        backgroundColor: "#FFA000",
         borderRadius: "50@s",
         width: "36@s",
         height: "36@s",
@@ -270,7 +270,7 @@ const styles = ScaledSheet.create({
     addButton: {
         position: "absolute",
         bottom: "95@vs",
-        backgroundColor: "#007BFF",
+        backgroundColor: "#FFA000",
         padding: "15@s",
         borderRadius: "50@s",
         elevation: 5,

@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     activeIconContainer: {
-        backgroundColor: "#007AFF",
+        backgroundColor: "#FFA000",
     },
     navText: {
         marginTop: 5,
