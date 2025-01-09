@@ -138,7 +138,7 @@ const styles = ScaledSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: "white",
+        backgroundColor: '#2a2a40',
         borderTopLeftRadius: '25@s',
         borderTopRightRadius: '25@s',
         paddingHorizontal: '20@s',
