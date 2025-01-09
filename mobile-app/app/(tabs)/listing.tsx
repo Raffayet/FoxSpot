@@ -7,9 +7,13 @@ import {FontAwesome} from "@expo/vector-icons";
 import {getEventTypeDetails} from "@/util/eventTypes";
 import MapView from "react-native-maps";
 import MapService from "@/service/map.service";
+import {useMap} from "@/hooks/MapContext";
+import {useRouter} from "expo-router";
 
 export default function ListingPage() {
     const [events, setEvents] = useState<Event[]>([]);
+    const router = useRouter();
+    const { mapRef } = useMap();
 
     const { refetch: refetchEvents, isLoading: isLoadingEvents, isError: isErrorEvents, data: eventData } = useQuery<Event[]>({
         queryKey: ['event-listing'],
@@ -29,15 +33,23 @@ export default function ListingPage() {
     };
 
     const zoomLocation = (lat: string, long: string) => {
-        if(MapService.mapRef?.current) {
-            MapService.mapRef?.current?.animateToRegion({
-                latitude: parseFloat(lat),
-                longitude: parseFloat(long),
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            });
-        }
-    }
+        // Navigate to the Map tab first
+        router.push("/(tabs)/");
+
+        // Delay the zoom to give React Navigation time to switch tabs
+        setTimeout(() => {
+            if (mapRef?.current) {
+                mapRef.current.animateToRegion({
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(long),
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                });
+            } else {
+                console.error("mapRef is not available");
+            }
+        }, 500); // Add a delay (in milliseconds)
+    };
 
     const renderEvent = ({ item }) => (
         // Just placeholder image for testing purposes

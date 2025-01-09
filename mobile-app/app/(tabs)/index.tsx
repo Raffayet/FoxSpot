@@ -20,6 +20,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Point } from "@/model/point"
 import MapService from "@/service/map.service";
+import {useMap} from "@/hooks/MapContext";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -38,9 +39,7 @@ export default function App() {
 
     const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
 
-    const mapRef = useRef<MapView>(null);
-
-    MapService.mapRef = mapRef;
+    const { mapRef } = useMap();
 
     const { refetch, isLoading, isError, data } = useQuery({
         queryKey: ["events"],
