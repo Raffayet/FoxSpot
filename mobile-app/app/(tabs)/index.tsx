@@ -21,6 +21,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Point } from "@/model/point"
 import MapService from "@/service/map.service";
 import {useMap} from "@/hooks/MapContext";
+import SearchBar from "@/components/custom_components/SearchBar";
 
 export default function App() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -35,7 +36,6 @@ export default function App() {
     // Search
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Event[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
 
     const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
 
@@ -101,14 +101,11 @@ export default function App() {
     };
 
     const handleSearch = async (query: string) => {
-        setIsSearching(true);
         try {
             const results = await EventService.searchEvents(query);
             setSearchResults(results);
         } catch (error) {
             console.error("Error fetching search results:", error);
-        } finally {
-            setIsSearching(false);
         }
     };
 
@@ -158,18 +155,11 @@ export default function App() {
             />
 
             {/* Search Bar with Location-Arrow Button */}
-            <View style={styles.searchContainer}>
-                <Icon name="map-marker" size={20} color="#888" style={styles.mapIcon} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search events..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-                <TouchableOpacity style={styles.arrowButton} onPress={handleSearch}>
-                    <Icon name="search" size={18} color="#fff" />
-                </TouchableOpacity>
-            </View>
+            <SearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                handleSearch={handleSearch}
+            />
 
             {/* Search Results List */}
             {searchResults.length > 0 && (
@@ -231,41 +221,6 @@ const styles = ScaledSheet.create({
     container: {
         flex: 1,
         position: "relative",
-    },
-    searchContainer: {
-        position: "absolute",
-        top: "40@s",
-        left: "10@s",
-        right: "10@s",
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: "20@s",
-        paddingHorizontal: "10@s",
-        paddingVertical: "5@s",
-        elevation: 3,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: "5@s",
-        zIndex: 1000, // Ensure it appears above the map
-    },
-    mapIcon: {
-        marginRight: "10@s",
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: "14@s",
-        color: "#333",
-        paddingHorizontal: "10@s",
-    },
-    arrowButton: {
-        backgroundColor: "#0066ff",
-        borderRadius: "50@s",
-        width: "36@s",
-        height: "36@s",
-        alignItems: "center",
-        justifyContent: "center",
-        marginLeft: "10@s",
     },
     addButton: {
         position: "absolute",
