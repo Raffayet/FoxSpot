@@ -239,7 +239,7 @@ const styles = ScaledSheet.create({
         right: "10@s",
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: '#2a2a40',
+        backgroundColor: '#ffffff',
         borderRadius: "20@s",
         paddingHorizontal: "10@s",
         paddingVertical: "5@s",
@@ -251,7 +251,8 @@ const styles = ScaledSheet.create({
         color: 'white'
     },
     mapIcon: {
-        color: 'white',
+        fontSize: '22@s',
+        color: "#FFA000",
         marginRight: "10@s",
     },
     searchInput: {
