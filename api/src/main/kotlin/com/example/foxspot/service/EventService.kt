@@ -52,6 +52,8 @@ class EventService(
     }
 
     fun searchEvents(query: String): List<Event> {
+        if(query == "") return eventRepository.findAll()
+
         val criteria = Criteria().orOperator(
             Criteria.where("name").regex(query, "i"),
             Criteria.where("description").regex(query, "i"),

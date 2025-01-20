@@ -8,6 +8,7 @@ import { getEventTypeDetails } from "@/util/eventTypes";
 import { useMap } from "@/hooks/MapContext";
 import { useRouter } from "expo-router";
 import SearchBar from "@/components/custom_components/SearchBar";
+import {useDebounce} from "@/hooks/useDebounce";
 
 export default function ListingPage() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -15,11 +16,11 @@ export default function ListingPage() {
     const { mapRef } = useMap();
 
     const [searchQuery, setSearchQuery] = useState("");
-    const debounceRef = useRef<NodeJS.Timeout | null>(null); // For debouncing
+    const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
 
     const { refetch: refetchEvents, isLoading: isLoadingEvents, isError: isErrorEvents, data: eventData } = useQuery<Event[]>({
         queryKey: ["event-listing"],
-        queryFn: EventService.getAllEvents,
+        queryFn: EventService.searchEvents(debouncedSearchQuery),
         refetchInterval: 5000,
     });
 
@@ -29,24 +30,17 @@ export default function ListingPage() {
         }
     }, [eventData]);
 
-    const handleSearch = (query: string) => {
-        if (debounceRef.current) {
-            clearTimeout(debounceRef.current);
+    useEffect(() => {
+        handleSearch(debouncedSearchQuery);
+    }, [debouncedSearchQuery]);
+
+    const handleSearch = async (query: string) => {
+        try {
+            const results = await EventService.searchEvents(query);
+            setEvents(results as Event[]);
+        } catch (error) {
+            console.error("Error fetching search results:", error);
         }
-        debounceRef.current = setTimeout(async () => {
-            try {
-                if (query.trim() === "") {
-                    // Reload original data if the search query is empty
-                    const allEvents = await EventService.getAllEvents();
-                    setEvents(allEvents);
-                } else {
-                    const results = await EventService.searchEvents(query);
-                    setEvents(results as Event[]);
-                }
-            } catch (error) {
-                console.error("Error fetching search results:", error);
-            }
-        }, 300); // Adjust debounce delay (300ms is standard)
     };
 
     const zoomLocation = (lat: string, long: string) => {
@@ -106,10 +100,8 @@ export default function ListingPage() {
             {/* Search Bar */}
             <SearchBar
                 searchQuery={searchQuery}
-                setSearchQuery={(query) => {
-                    setSearchQuery(query);
-                    handleSearch(query); // Trigger debounced search
-                }}
+                setSearchQuery={setSearchQuery}
+                handleSearch={handleSearch}
             />
 
             {events && events.length > 0 ? (
