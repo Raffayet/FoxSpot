@@ -1,23 +1,26 @@
-import {FlatList, ImageBackground, Text, TouchableOpacity, View} from "react-native";
-import React, {useEffect, useRef, useState} from "react";
-import {ScaledSheet} from "react-native-size-matters";
-import {useQuery} from "@tanstack/react-query";
-import {EventService} from "@/service/event.service";
-import {FontAwesome} from "@expo/vector-icons";
-import {getEventTypeDetails} from "@/util/eventTypes";
-import MapView from "react-native-maps";
-import MapService from "@/service/map.service";
-import {useMap} from "@/hooks/MapContext";
-import {useRouter} from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import { FlatList, ImageBackground, Text, TouchableOpacity, View } from "react-native";
+import { ScaledSheet } from "react-native-size-matters";
+import { useQuery } from "@tanstack/react-query";
+import { EventService } from "@/service/event.service";
+import { FontAwesome } from "@expo/vector-icons";
+import { getEventTypeDetails } from "@/util/eventTypes";
+import { useMap } from "@/hooks/MapContext";
+import { useRouter } from "expo-router";
+import SearchBar from "@/components/custom_components/SearchBar";
+import {useDebounce} from "@/hooks/useDebounce";
 
 export default function ListingPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const router = useRouter();
     const { mapRef } = useMap();
 
+    const [searchQuery, setSearchQuery] = useState("");
+    const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
+
     const { refetch: refetchEvents, isLoading: isLoadingEvents, isError: isErrorEvents, data: eventData } = useQuery<Event[]>({
-        queryKey: ['event-listing'],
-        queryFn: EventService.getAllEvents,
+        queryKey: ["event-listing"],
+        queryFn: EventService.searchEvents(debouncedSearchQuery),
         refetchInterval: 5000,
     });
 
@@ -25,18 +28,23 @@ export default function ListingPage() {
         if (eventData) {
             setEvents(eventData);
         }
-        console.log(events)
     }, [eventData]);
 
-    const handlePress = () => {
-        console.log("Map button pressed!");
+    useEffect(() => {
+        handleSearch(debouncedSearchQuery);
+    }, [debouncedSearchQuery]);
+
+    const handleSearch = async (query: string) => {
+        try {
+            const results = await EventService.searchEvents(query);
+            setEvents(results as Event[]);
+        } catch (error) {
+            console.error("Error fetching search results:", error);
+        }
     };
 
     const zoomLocation = (lat: string, long: string) => {
-        // Navigate to the Map tab first
         router.push("/(tabs)/");
-
-        // Delay the zoom to give React Navigation time to switch tabs
         setTimeout(() => {
             if (mapRef?.current) {
                 mapRef.current.animateToRegion({
@@ -48,16 +56,15 @@ export default function ListingPage() {
             } else {
                 console.error("mapRef is not available");
             }
-        }, 500); // Add a delay (in milliseconds)
+        }, 500);
     };
 
     const renderEvent = ({ item }) => (
-        // Just placeholder image for testing purposes
         <ImageBackground
-            source={{ uri: 'https://static.vecteezy.com/system/resources/thumbnails/033/350/925/small_2x/wallpaper-dark-urban-surface-background-ai-generated-photo.jpg' }} // Use the image URL from the item
-            style={styles.backgroundImage} // Style for the background image
-            resizeMode="cover" // Adjust image scaling
-            imageStyle={{ borderRadius: 12 }} // Optional: Add rounded corners to the image
+            source={{ uri: "https://static.vecteezy.com/system/resources/thumbnails/033/350/925/small_2x/wallpaper-dark-urban-surface-background-ai-generated-photo.jpg" }}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+            imageStyle={{ borderRadius: 12 }}
         >
             <View style={styles.eventItem}>
                 <View style={styles.row}>
@@ -67,23 +74,17 @@ export default function ListingPage() {
                         <View style={styles.eventRow}>
                             <Text style={styles.eventText}>{item.eventType}</Text>
                             {(() => {
-                                const { icon, tags, color } = getEventTypeDetails(item.eventType || "");
-                                return (
-                                    <FontAwesome name={icon} style={{ color, marginTop: 3, fontSize: 18 }}>
-
-                                    </FontAwesome>
-                                );
+                                const { icon, color } = getEventTypeDetails(item.eventType || "");
+                                return <FontAwesome name={icon} style={{ color, marginTop: 3, fontSize: 18 }} />;
                             })()}
                         </View>
                     </View>
                     <View>
-                        <TouchableOpacity style={styles.button} onPress={() => zoomLocation(item.location?.lat.toString() as string, item.location?.long.toString() as string)}>
-                            <FontAwesome
-                                name="map-marker"
-                                size={24}
-                                color="#fff"
-                                style={styles.icon}
-                            />
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => zoomLocation(item.location?.lat.toString() as string, item.location?.long.toString() as string)}
+                        >
+                            <FontAwesome name="map-marker" size={24} color="#fff" style={styles.icon} />
                             <Text style={styles.buttonText}>Open</Text>
                         </TouchableOpacity>
                     </View>
@@ -95,6 +96,14 @@ export default function ListingPage() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Events</Text>
+
+            {/* Search Bar */}
+            <SearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                handleSearch={handleSearch}
+            />
+
             {events && events.length > 0 ? (
                 <FlatList
                     data={events}
