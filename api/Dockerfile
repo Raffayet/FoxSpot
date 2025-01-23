@@ -3,7 +3,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle build
 
-FROM openjdk:17-jdk-slim
+FROM openjdk:17-jre-slim
 EXPOSE 8080
 COPY --from=build /home/gradle/src/build/libs/foxspot-0.0.1-SNAPSHOT.jar /app/
 RUN bash -c 'touch /app/foxspot-0.0.1-SNAPSHOT.jar'
