@@ -1,8 +1,6 @@
 FROM openjdk:19-alpine
 
-RUN apk add --no-cache unzip
-
-RUN apk add --no-cache bash
+RUN apk add --no-cache bash curl unzip
 
 WORKDIR /com.example.foxspot
 
@@ -12,4 +10,4 @@ ENV GRADLE_HOME=/app/gradle-6.5.1
 ENV PATH=$PATH:$GRADLE_HOME/bin
 RUN gradle --version
 
-CMD ./gradlew run
+CMD ["./gradlew", "run"]
