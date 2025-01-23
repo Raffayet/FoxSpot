@@ -3,9 +3,10 @@ plugins {
 	kotlin("plugin.spring") version "1.9.25"
 	id("org.springframework.boot") version "3.4.1"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("com.github.johnrengelman.shadow") version "7.1.2" // Correct the plugin ID
+	id("com.github.johnrengelman.shadow") version "7.1.2"
 	application
 }
+
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 	archiveClassifier.set("")
 	manifest {
@@ -13,6 +14,21 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 	}
 }
 
+tasks.named("bootDistZip") {
+	dependsOn(tasks.named("shadowJar"))
+}
+
+tasks.named("bootDistTar") {
+	dependsOn(tasks.named("shadowJar"))
+}
+
+tasks.named("bootStartScripts") {
+	dependsOn(tasks.named("shadowJar"))
+}
+
+tasks.named("bootJar") {
+	dependsOn(tasks.named("shadowJar"))
+}
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
@@ -26,9 +42,6 @@ java {
 application {
 	mainClass.set("com.example.foxspot.FoxspotApplicationKt")
 }
-
-
-
 
 configurations {
 	compileOnly {
@@ -59,7 +72,6 @@ dependencies {
 	implementation("com.amazonaws:aws-lambda-java-events:3.11.1")
 	runtimeOnly("com.amazonaws:aws-lambda-java-log4j2:1.5.1")
 	runtimeOnly("org.springframework.boot:spring-boot-starter-logging")
-
 }
 
 kotlin {

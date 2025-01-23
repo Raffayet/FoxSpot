@@ -32,7 +32,7 @@ class EventController(
     @DeleteMapping("/delete/{id}")
     fun deleteEvent(@PathVariable id: String): ResponseEntity<Void> {
         return try {
-            eventService.deleteEventById(id = id?: throw Exception(id))
+            eventService.deleteEventById(id = id)
             ResponseEntity.noContent().build()
         } catch (e: Exception) {
             ResponseEntity.notFound().build()
