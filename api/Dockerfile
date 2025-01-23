@@ -1,8 +1,13 @@
-# Use Alpine-based OpenJDK image
-FROM openjdk:19-alpine
+# Use a Debian-based image for better compatibility
+FROM openjdk:19-slim
 
 # Install dependencies
-RUN apk add --no-cache bash curl unzip
+RUN apt-get update && apt-get install -y \
+    curl \
+    unzip \
+    libstdc++6 \
+    zlib1g \
+    && apt-get clean
 
 # Set working directory
 WORKDIR /com.example.foxspot
@@ -13,20 +18,11 @@ COPY . .
 # Ensure gradlew has execute permissions
 RUN chmod +x ./gradlew
 
-# Set environment variables for Gradle
-ENV GRADLE_HOME=/com.example.foxspot/gradle-6.5.1
-ENV GRADLE_USER_HOME=/home/gradle
-ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
-ENV PATH="${GRADLE_HOME}/bin:${PATH}"
+# Disable Gradle Daemon and parallel execution
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
 
-# Download and install Gradle
-RUN curl -L https://services.gradle.org/distributions/gradle-6.5.1-bin.zip -o gradle-6.5.1-bin.zip \
-    && unzip gradle-6.5.1-bin.zip \
-    && rm gradle-6.5.1-bin.zip
+# Verify Gradle setup and clean build
+RUN ./gradlew clean --no-daemon
 
-# Clean and verify Gradle installation
-RUN ./gradlew clean
-RUN ./gradlew --version
-
-# Default command
-CMD ["./gradlew", "run", "--no-daemon"]
+# Set the default command
+CMD ["./gradlew", "run", "--no-daemon", "--warning-mode=all"]
