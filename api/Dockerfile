@@ -1,7 +1,7 @@
-# Use a Debian-based image for better compatibility
-FROM openjdk:19-slim
+# Use a Debian-based image with JDK 17
+FROM openjdk:17-slim
 
-# Install dependencies
+# Install required dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     unzip \
@@ -18,8 +18,10 @@ COPY . .
 # Ensure gradlew has execute permissions
 RUN chmod +x ./gradlew
 
-# Disable Gradle Daemon and parallel execution
-ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
+# Set Java home and Gradle options
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+ENV GRADLE_OPTS="-Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
 
 # Verify Gradle setup and clean build
 RUN ./gradlew clean --no-daemon
