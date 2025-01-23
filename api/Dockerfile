@@ -1,6 +1,6 @@
 FROM openjdk:19-alpine
 
-RUN apt-get install -y unzip
+RUN apk add --no-cache unzip
 
 RUN apk add --no-cache bash
 
