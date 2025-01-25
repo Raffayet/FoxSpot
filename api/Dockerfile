@@ -1,30 +1,25 @@
-# Use a Debian-based image with JDK 17
-FROM openjdk:17-slim
+# Use a multi-stage build
+# Stage 1: Build the application
+FROM gradle:8.0-jdk17 AS build
+WORKDIR /app
 
-# Install required dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    unzip \
-    libstdc++6 \
-    zlib1g \
-    && apt-get clean
+# Copy source code and Gradle files
+COPY build.gradle.kts settings.gradle.kts gradlew ./
+COPY gradle ./gradle
+COPY src ./src
 
-# Set working directory
-WORKDIR /com.example.foxspot
+# Build the application
+RUN ./gradlew build --no-daemon
 
-# Copy all project files
-COPY . .
+# Stage 2: Create a minimal runtime image
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
 
-# Ensure gradlew has execute permissions
-RUN chmod +x ./gradlew
+# Copy the built jar from the previous stage
+COPY --from=build /app/build/libs/*.jar app.jar
 
-# Set Java home and Gradle options
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
-ENV GRADLE_OPTS="-Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
+# Expose the application port
+EXPOSE 8080
 
-# Verify Gradle setup and clean build
-RUN ./gradlew clean --no-daemon
-
-# Set the default command
-CMD ["./gradlew", "run", "--no-daemon", "--warning-mode=all"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

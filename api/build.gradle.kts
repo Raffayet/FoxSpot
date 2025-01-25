@@ -3,31 +3,11 @@ plugins {
 	kotlin("plugin.spring") version "1.9.25"
 	id("org.springframework.boot") version "3.4.1"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("com.github.johnrengelman.shadow") version "7.1.2"
 	application
 }
 
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-	archiveClassifier.set("")
-	manifest {
-		attributes(mapOf("Main-Class" to "com.example.foxspot.FoxspotApplicationKt"))
-	}
-}
-
-tasks.named("bootDistZip") {
-	dependsOn(tasks.named("shadowJar"))
-}
-
-tasks.named("bootDistTar") {
-	dependsOn(tasks.named("shadowJar"))
-}
-
-tasks.named("bootStartScripts") {
-	dependsOn(tasks.named("shadowJar"))
-}
-
-tasks.named("bootJar") {
-	dependsOn(tasks.named("shadowJar"))
+tasks.bootJar {
+	archiveFileName.set("app.jar")
 }
 
 group = "com.example"
