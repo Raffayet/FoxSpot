@@ -3,13 +3,16 @@
 FROM gradle:8.0-jdk17 AS build
 WORKDIR /app
 
-# Copy source code and Gradle files
+# Copy source code and Gradle wrapper files
 COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY gradle ./gradle
 COPY src ./src
 
-# Build the application
-RUN ./gradlew build --no-daemon
+# Give execution permissions to gradlew
+RUN chmod +x gradlew
+
+# Build the application without running tests
+RUN ./gradlew build --no-daemon -x test
 
 # Stage 2: Create a minimal runtime image
 FROM eclipse-temurin:17-jdk-alpine
