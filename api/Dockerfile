@@ -1,25 +1,24 @@
-# Use a multi-stage build
 # Stage 1: Build the application
 FROM gradle:8.0-jdk17 AS build
 WORKDIR /app
 
-# Copy source code and Gradle wrapper files
+# Copy source code and Gradle files
 COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY gradle ./gradle
 COPY src ./src
 
-# Give execution permissions to gradlew
+# Ensure gradlew is executable
 RUN chmod +x gradlew
 
 # Build the application without running tests
-RUN ./gradlew build --no-daemon -x test
+RUN ./gradlew bootJar --no-daemon -x test
 
 # Stage 2: Create a minimal runtime image
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
-# Copy the built jar from the previous stage
-COPY --from=build /app/build/libs/*.jar app.jar
+# Copy the built Spring Boot JAR from the build stage
+COPY --from=build /app/build/libs/app.jar app.jar
 
 # Expose the application port
 EXPOSE 8080
