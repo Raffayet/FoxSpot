@@ -8,53 +8,53 @@ export interface Props {
     events: Event[];
     onMarkerPress: (event: Event) => void;
     mapRef: React.RefObject<MapView>;
+    loading: boolean;
 }
 
-export default function MapComponent({ events, onMarkerPress, mapRef }: Props) {
+export default function MapComponent({ events, onMarkerPress, mapRef, loading }: Props) {
     const currentHour = new Date().getHours();
-    const isDayTime = currentHour >= 6 && currentHour < 18; // Day: 6 AM to 6 PM
-
-    if (events?.length === 0) {
-        return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#007BFF" />
-            </View>
-        );
-    }
+    const isDayTime = currentHour >= 6 && currentHour < 18;
 
     return (
+        <View style={styles.container}>
+            <MapView
+                ref={mapRef}
+                style={styles.map}
+                customMapStyle={isDayTime ? dayMapStyle : nightMapStyle}
+                initialRegion={{
+                    latitude: 45.2671,
+                    longitude: 19.8335,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                }}
+            >
+                {events.map((event) => (
+                    <CustomMarker key={event.id} event={event} onPress={() => onMarkerPress(event)} />
+                ))}
+            </MapView>
 
-
-
-        <MapView
-            ref={mapRef}
-            style={styles.map}
-            customMapStyle={isDayTime ? dayMapStyle : nightMapStyle}
-            initialRegion={{
-                latitude: 45.2671,
-                longitude: 19.8335,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            }}
-        >
-            {events?.map((event) => (
-                <CustomMarker
-                    key={event.id}
-                    event={event}
-                    onPress={() => onMarkerPress(event)}
-                />
-            ))}
-        </MapView>
+            {loading && (
+                <View style={styles.loaderOverlay}>
+                    <ActivityIndicator size="large" color="#007BFF" />
+                </View>
+            )}
+        </View>
     );
 }
 
 const styles = ScaledSheet.create({
-    map: { flex: 1 },
-    loaderContainer: {
+    container: {
         flex: 1,
+    },
+    map: {
+        flex: 1,
+    },
+    loaderOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(255, 255, 255, 0.7)",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#F5FCFF",
+        zIndex: 10,
     },
 });
 
