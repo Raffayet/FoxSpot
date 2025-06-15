@@ -152,6 +152,8 @@ export default function App() {
                 events={filteredEvents}
                 onMarkerPress={handleMarkerPress}
                 mapRef={mapRef}
+                loading={isLoading} 
+
             />
 
             {/* Search Bar with Location-Arrow Button */}
